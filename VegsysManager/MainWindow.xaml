@@ -1,0 +1,83 @@
+﻿<src:SecuredWindow x:Class="VegsysManager.MainWindow"
+        xmlns:src="clr-namespace:ABUtils"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VegsysManager"
+        xmlns:utils="clr-namespace:ABUtils"
+        xmlns:r="http://schemas.microsoft.com/winfx/2006/xaml/presentation/ribbon"
+        mc:Ignorable="d"
+        Icon="Images/Fatcow-Farm-Fresh-Plant.ico"
+        MinHeight="800" MinWidth="500" 
+        Title="Vegsys Manager" Height="800" Width="600">
+    <Window.Resources>
+        <utils:WindowPositionConverter x:Key="WindowPosition" />
+        <Style x:Key="hdrstyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Width" Value="Auto" />
+        </Style>
+    </Window.Resources>
+    <Grid x:Name="grid">
+        
+        <DataGrid x:Name="plots_grd" Width="Auto" Height="Auto" IsReadOnly="True" Margin="0,117.2,0,30"
+                  SelectionUnit="FullRow" SelectionMode="Extended"
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserResizeColumns="True"
+                  CanUserSortColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  HorizontalGridLinesBrush="#DDD" VerticalGridLinesBrush="#DDD" ItemsSource="{Binding}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="PlotNumber" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Project" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Date"  HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Site Surveyor" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DockPanel x:Name="statusBar" Width="Auto" Height="30" VerticalAlignment="Bottom" Background="White"  >
+            <Border BorderBrush="#DDD" BorderThickness="2" DockPanel.Dock="Top">
+                <DockPanel>
+                    <TextBlock x:Name="status_tb" Width="Auto" MaxWidth="1000" DockPanel.Dock="Left" FontFamily="Courier New"
+                            VerticalAlignment="Center" FontSize="15" Margin="5,0,0,0"></TextBlock>
+                </DockPanel>
+            </Border>
+        </DockPanel>
+        <r:Ribbon x:Name="veg_rbn" VerticalAlignment="Top" Loaded="ribbon_Loaded" ContextMenu="{x:Null}">
+            <r:Ribbon.ApplicationMenu>
+                <r:RibbonApplicationMenu Loaded="RibbonApplicationMenu_Loaded">
+                    <r:RibbonApplicationMenu.Resources>
+                        <Style TargetType="Popup">
+                            <Setter Property="VerticalOffset" Value="25" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Normal" />
+                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=Left,
+                                                                                                                      Converter={StaticResource WindowPosition}}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Placement" Value="Left" />
+                                    <Setter Property="HorizontalOffset" Value="-56"/>
+                                </MultiDataTrigger>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Maximized">
+                                    <Setter Property="Placement" Value="Relative" />
+                                    <Setter Property="HorizontalOffset" Value="60"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </r:RibbonApplicationMenu.Resources>
+                    <r:RibbonApplicationMenuItem x:Name="exit_btn" Header="Exit Program" ImageSource="Images/cross-icon.png" Click="exit_btn_Click"/>
+                </r:RibbonApplicationMenu>
+            </r:Ribbon.ApplicationMenu>
+            <r:RibbonTab Header="ABWRET" x:Name="vegsys_tab" ContextMenu="{x:Null}">
+                <r:RibbonGroup x:Name="staging_rg" Header="Staging Database" ContextMenu="{x:Null}">
+                    <r:RibbonToggleButton x:Name="connect2veg_btn" Label="Connect To Vegsys" LargeImageSource="Images/connect-icon.png" ContextMenu="{x:Null}"
+                                          IsChecked="{Binding VegConn, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                    <r:RibbonButton x:Name="export_btn" Label="Export Report" LargeImageSource="Images/page-white-excel-icon.png" ContextMenu="{x:Null}"
+                                    Click="export_btn_Click"/>
+                    <r:RibbonButton x:Name="manualsync_btn" Label="Sync SDF" LargeImageSource="Images/database-save-icon.png" ContextMenu="{x:Null}"
+                                    Click="manualsync_btn_Click"/>
+                </r:RibbonGroup>
+                
+                
+            </r:RibbonTab>
+        </r:Ribbon>
+    </Grid>
+</src:SecuredWindow>

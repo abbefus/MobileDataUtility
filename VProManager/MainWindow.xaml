@@ -1,0 +1,105 @@
+﻿<src:SecuredWindow x:Class="VProManager.MainWindow"
+        xmlns:src="clr-namespace:ABUtils"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VProManager"
+        xmlns:r="http://schemas.microsoft.com/winfx/2006/xaml/presentation/ribbon"
+        mc:Ignorable="d"
+        Icon="Images/Fatcow-Farm-Fresh-Plant.ico"
+        MinHeight="800" MinWidth="500" 
+        Title="VPro Manager" Height="800" Width="600">
+    <Window.Resources>
+        <local:WindowPositionConverter x:Key="WindowPosition" />
+        <local:IntToBoolConverter x:Key="Int2Bool" />
+        <local:DateTimeConverter x:Key="DateTime2String" />
+        <local:InverseBooleanConverter x:Key="InverseBoolean" />
+        <Style x:Key="hdrstyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Width" Value="Auto" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <DockPanel x:Name="statusBar" Width="Auto" Height="30" VerticalAlignment="Bottom" Background="White"  >
+            <Border BorderBrush="#DDD" BorderThickness="2" DockPanel.Dock="Top">
+                <DockPanel>
+                    <TextBlock x:Name="status_tb" Width="Auto" MaxWidth="1000" DockPanel.Dock="Left" FontFamily="Courier New"
+                            VerticalAlignment="Center" FontSize="15" Margin="5,0,0,0"></TextBlock>
+                </DockPanel>
+            </Border>
+        </DockPanel>
+        <DataGrid x:Name="plots_grd" Width="Auto" Height="Auto" IsReadOnly="True" Margin="0,116.8,0,30"
+                  SelectionUnit="FullRow" SelectionMode="Extended"
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserResizeColumns="True"
+                  CanUserSortColumns="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  HorizontalGridLinesBrush="#DDD" VerticalGridLinesBrush="#DDD" ItemsSource="{Binding}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="PlotNumber"  Binding="{Binding PlotNumber, Mode=OneWay, NotifyOnSourceUpdated=True}" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Project" Binding="{Binding ProjectTitle, Mode=OneWay, NotifyOnSourceUpdated=True}" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Date" Binding="{Binding SurveyDate, Mode=OneWay, NotifyOnSourceUpdated=True, Converter={StaticResource DateTime2String}}" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Site Surveyor" Binding="{Binding SiteSurveyor, Mode=OneWay, NotifyOnSourceUpdated=True}" HeaderStyle="{StaticResource hdrstyle}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <r:Ribbon x:Name="vpro_rbn" VerticalAlignment="Top" Loaded="ribbon_Loaded" ContextMenu="{x:Null}">
+            <r:Ribbon.ApplicationMenu>
+                <r:RibbonApplicationMenu Loaded="RibbonApplicationMenu_Loaded">
+                    <r:RibbonApplicationMenu.Resources>
+                        <Style TargetType="Popup">
+                            <Setter Property="VerticalOffset" Value="25" />
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Normal" />
+                                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=Left,
+                                                                                                                      Converter={StaticResource WindowPosition}}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Placement" Value="Left" />
+                                    <Setter Property="HorizontalOffset" Value="-56"/>
+                                </MultiDataTrigger>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}, Path=WindowState}" Value="Maximized">
+                                    <Setter Property="Placement" Value="Relative" />
+                                    <Setter Property="HorizontalOffset" Value="60"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </r:RibbonApplicationMenu.Resources>
+                    <r:RibbonApplicationMenuItem x:Name="exit_btn" Header="Exit Program" ImageSource="Images/cross-icon.png" Click="exit_btn_Click"/>
+                </r:RibbonApplicationMenu>
+            </r:Ribbon.ApplicationMenu>
+            <r:RibbonTab Header="Database Manager" x:Name="staging_tab" ContextMenu="{x:Null}">
+                <r:RibbonGroup x:Name="staging_rg" Header="Staging Database" ContextMenu="{x:Null}"
+                               IsEnabled="{Binding ElementName=connect2prod_btn, Path=IsChecked, Converter={StaticResource InverseBoolean}}">
+                    <r:RibbonToggleButton x:Name="connect2stage_btn" Label="Connect To Staging" LargeImageSource="Images/connect-icon.png" ContextMenu="{x:Null}"
+                                          IsChecked="{Binding StageConn, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                    <r:RibbonButton x:Name="copy2prod_btn" Label="Copy To VProE" LargeImageSource="Images/calendar-copy-icon.png" ContextMenu="{x:Null}"
+                                    Click="copy2prod_btn_Click"
+                                    IsEnabled="{Binding ElementName=plots_grd, Path=SelectedItems.Count, Converter={StaticResource Int2Bool}, NotifyOnSourceUpdated=True}" />
+                </r:RibbonGroup>
+                <r:RibbonGroup x:Name="production_rg" Header="Production Database" ContextMenu="{x:Null}"
+                               IsEnabled="{Binding ElementName=connect2stage_btn, Path=IsChecked, Converter={StaticResource InverseBoolean}}">
+                    <r:RibbonToggleButton x:Name="connect2prod_btn" Label="Connect To VProE" LargeImageSource="Images/connect-icon.png" ContextMenu="{x:Null}"
+                                          IsChecked="{Binding VProEConn, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                    <r:RibbonButton x:Name="delete_btn" Label="Delete Plots" LargeImageSource="Images/table-row-delete-icon.png" ContextMenu="{x:Null}" 
+                                    Click="delete_btn_Click"
+                                    IsEnabled="{Binding ElementName=plots_grd, Path=SelectedItems.Count, Converter={StaticResource Int2Bool}, NotifyOnSourceUpdated=True}" />
+                </r:RibbonGroup>
+                <r:RibbonGroup x:Name="filter_rg" Header="Filter Data" ContextMenu="{x:Null}">
+                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,10,10,0">
+                        <DockPanel>
+                            <TextBlock Margin ="0,0,5,0" Width="40" HorizontalAlignment="Left" VerticalAlignment="Center" TextAlignment="Right" FontSize="12">Project:</TextBlock>
+                            <ComboBox x:Name="project_cb" Width="150" IsEnabled="False" IsReadOnly="True"/>
+                            <!--<r:RibbonComboBox SelectionBoxWidth="150">
+                                <r:RibbonGallery x:Name="project_rg" SelectedValuePath="Content.Text" IsEnabled="False">
+                                    <r:RibbonGalleryCategory x:Name="project_rgc">
+                                    </r:RibbonGalleryCategory>
+                                </r:RibbonGallery>
+                            </r:RibbonComboBox>-->
+                        </DockPanel>
+                    </StackPanel>
+                </r:RibbonGroup>
+            </r:RibbonTab>
+        </r:Ribbon>
+    </Grid>
+</src:SecuredWindow>
