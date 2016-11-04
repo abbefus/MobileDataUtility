@@ -119,13 +119,23 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classes\DataFormF.cs" />
-    <Compile Include="Classes\DataFormF2.cs" />
+    <Compile Include="Classes\Database\DataFormF.cs" />
+    <Compile Include="Classes\Database\WildlifeIncidental.cs" />
+    <Compile Include="Classes\Database\WetlandHydrology.cs" />
+    <Compile Include="Classes\Database\SpeciesObserved.cs" />
+    <Compile Include="Classes\Database\SoilObs.cs" />
+    <Compile Include="Classes\Database\SiteSurvey.cs" />
+    <Compile Include="Classes\Database\SiteLSD.cs" />
+    <Compile Include="Classes\Database\Site.cs" />
+    <Compile Include="Classes\Database\Project.cs" />
+    <Compile Include="Classes\Database\ProjectSite.cs" />
+    <Compile Include="Classes\Database\HerbPlotSummary.cs" />
+    <Compile Include="Classes\Database\DataFormF2.cs" />
     <Compile Include="Classes\DataReaderExtensions.cs" />
     <Compile Include="Classes\LatLongCalc.cs" />
     <Compile Include="Classes\SqlCeUtils.cs" />
     <Compile Include="Classes\SqlUtils.cs" />
-    <Compile Include="Classes\VegsysDB.cs" />
+    <Compile Include="Classes\Database\VegsysDB.cs" />
     <Compile Include="Converters.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
