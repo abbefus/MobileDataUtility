@@ -92,7 +92,7 @@ namespace VegsysManager.Classes.Vegsys
         public bool? F9_3 { get; set; }    //0.5 - 1 m change
         public bool? F9_4 { get; set; }    //1-2 m change
         public bool? F9_5 { get; set; }    //>2 m change
-        //public bool? F9_6 { get; set; }    // I don't see an F9_6 --------------------------------------------------------------------------------------------ERROR
+        public bool? F9_6 { get; set; }    // I don't see an F9_6 --------------------------------------------------------------------------------------------ERROR
 
 
         // During most of the time when water is present, its depth in most of the area is: [Note: This is not asking for the maximum depth]

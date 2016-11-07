@@ -8,7 +8,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -24,6 +23,11 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using VEGSYS = VegsysManager.Classes.Vegsys;
+using System.Drawing;
+using VisualTreeHelper = System.Windows.Media.VisualTreeHelper;
+using SolidColorBrush = System.Windows.Media.SolidColorBrush;
+using Colors = System.Windows.Media.Colors;
+using NPOI.SS.UserModel;
 
 namespace VegsysManager
 {
@@ -59,7 +63,7 @@ namespace VegsysManager
 
         private void WriteABWRETReport(string[] sitenumbers)
         {
-            //read template from resources
+            // read template from resources
             XSSFWorkbook template;
             using (MemoryStream memStream = new MemoryStream())
             {
@@ -71,29 +75,61 @@ namespace VegsysManager
                 memStream.Close();
             }
 
-            //DataTable siteDT = QuerySites(sitenumbers);
+            // get site and sitesurvey information from vegsys
+            IEnumerable<DataRow> siteRows = QuerySites(sitenumbers);
+            int[] siteIDs = siteRows.Select(x => (int)x["SiteID"]).ToArray();
 
-            //int[] siteIDs = siteDT.Rows.Cast<DataRow>().Select(x => (int)x["SiteID"]).ToArray();
-            //VEGSYS.DataFormF[] fvalues = QueryDataFormF(siteIDs);
+
             
+            
+            // write to "F" spreadsheet
             XSSFSheet sheet = (XSSFSheet)template.GetSheet("F");
-            WhiteFormV1_0 lu = new WhiteFormV1_0();
+            WhiteFormV1_0 map = new WhiteFormV1_0();
 
+            // fill out header information
+
+
+            // fill out matrix
+            VEGSYS.DataFormF[] dffs = QueryDataFormF(siteIDs);
             
+            for (int i = 0; i < dffs.Length; i++)
+            {
+                foreach (string p in typeof(VEGSYS.DataFormF).GetProperties().Select(x => x.Name))
+                {
+                    if (p == "DFFID") continue;
+                    int row = map.F_ROW[p];
+                    int column = map.F_COLUMN_START + i;
+                    PropertyInfo pi = dffs[i].GetType().GetProperty(p);
 
-            int row = lu.F_ROW["F1_1"];
-            int column = lu.F_COLUMN_START;
-            double value = 7.0;
+                    if (p == "SiteID")
+                    {
+                        XSSFCreationHelper helper = (XSSFCreationHelper)template.GetCreationHelper();
+                        XSSFCellStyle cellstyle = (XSSFCellStyle)template.CreateCellStyle();
+                        cellstyle.Rotation = 90;
+                        cellstyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
+                        cellstyle.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
+                        cellstyle.WrapText = false;
+                        XSSFFont font = new XSSFFont();
+                        font.Boldweight = (short)FontBoldWeight.Bold;
+                        font.SetColor(new XSSFColor(ExcelColors.SkyBlue));
 
-            // this works to rotate text (can probably also modify font)
-            //XSSFCellStyle cellstyle = (XSSFCellStyle)template.CreateCellStyle();
-            //cellstyle.Rotation = 90;
-            //XSSFCell c = (XSSFCell)sheet.GetRow(row).GetCell(column);
-            //c.CellStyle = cellstyle;
+                        font.FontName = "Arial Narrow";
+                        XSSFCell c = (XSSFCell)sheet.GetRow(row).GetCell(column);
+                        c.CellStyle = cellstyle;
 
-            SetValue(sheet, row, column, value);
-
-
+                        string value = siteRows.Where(x => (int)x[p] == dffs[i].SiteID).FirstOrDefault()["WetlandID"].ToString();
+                        XSSFRichTextString richtext = (XSSFRichTextString)helper.CreateRichTextString(value);
+                        richtext.ApplyFont(font);
+                        c.SetCellValue(richtext);
+                        sheet.GetRow(row).HeightInPoints = 120;
+                    }
+                    else
+                    {
+                        double value = BitToDouble(pi.GetValue(dffs[i]));
+                        SetValue(sheet, row, column, value);
+                    }
+                }
+            }
 
             using (FileStream file = new FileStream(outfile, FileMode.CreateNew, FileAccess.Write))
             {
@@ -102,7 +138,7 @@ namespace VegsysManager
             }
         }
 
-        private DataTable QuerySites(string[] sitenumbers)
+        private IEnumerable<DataRow> QuerySites(string[] sitenumbers)
         {
             string sitenumstring = string.Join("','", sitenumbers);
             StringBuilder sqlSB = new StringBuilder();
@@ -135,20 +171,48 @@ namespace VegsysManager
             {
                 sda.Fill(dt);
             }
-            return dt;
+            return dt.Rows.Cast<DataRow>();
         }
 
         private VEGSYS.DataFormF[] QueryDataFormF(int[] siteIDs)
         {
-            List<VEGSYS.DataFormF> dffs = new List<Classes.Vegsys.DataFormF>();
+            List<VEGSYS.DataFormF> dffs = new List<VEGSYS.DataFormF>();
+            string siteIDstring = string.Join(",", siteIDs);
+            StringBuilder sqlSB = new StringBuilder();
+            sqlSB.AppendLine("SELECT * FROM [V_DataFormF]")
+                .AppendLine(string.Format("WHERE SiteID IN ({0})", siteIDstring));
 
-
+            string connect = string.Format(VEG_CONN_STRING, PROD_DB);
+            DataTable dt = new DataTable();
+            using (SqlDataAdapter sda = new SqlDataAdapter(sqlSB.ToString(), connect))
+            {
+                sda.Fill(dt);
+            }
+            foreach (DataRow row in dt.Rows)
+            {
+                dffs.Add(VEGSYS.DataFormF.Create(row));
+            }
             return dffs.ToArray();
         }
 
         public static void SetValue(XSSFSheet sheet, int row, int column, double value)
         {
             sheet.GetRow(row).GetCell(column).SetCellValue(value);
+        }
+        public static void SetValue(XSSFSheet sheet, int row, int column, string value)
+        {
+            sheet.GetRow(row).GetCell(column).SetCellValue(value);
+        }
+        public static void SetValue(XSSFSheet sheet, int row, int column, IRichTextString value)
+        {
+            sheet.GetRow(row).GetCell(column).SetCellValue(value);
+        }
+        private static double BitToDouble(object Value)
+        {
+            if (DBNull.Value.Equals(Value))
+                return 0;
+            else
+                return Convert.ToDouble(Value);
         }
 
 
@@ -299,6 +363,29 @@ namespace VegsysManager
         {
             get { return Encoding.ASCII; }
         }
+    }
+
+    public static class ExcelColors
+    {
+        public static Color Aqua { get { return Color.FromArgb(0x4bacc6); } }
+        public static Color Aqua3 { get { return Color.FromArgb(0x92cddc); } }
+        public static Color Aqua4 { get { return Color.FromArgb(0x31869b); } }
+        public static Color SkyBlue { get { return Color.FromArgb(0x00b0f0); } }
+        public static Color Grey { get { return Color.FromArgb(0xf2f2f2); } }
+        public static Color Grey2 { get { return Color.FromArgb(0xd9d9d9); } }
+        public static Color Maroon { get { return Color.FromArgb(0xc0504d); } }
+        public static Color Maroon4 { get { return Color.FromArgb(0x963634); } }
+        public static Color Orange { get { return Color.FromArgb(0xf79646); } }
+        public static Color Orange1 { get { return Color.FromArgb(0xfde9d9); } }
+        public static Color Orange2 { get { return Color.FromArgb(0xfcd5b4); } }
+        public static Color Orange4 { get { return Color.FromArgb(0xe26b0a); } }
+        public static Color Purple0 { get { return Color.FromArgb(0x7030a0); } }
+        public static Color Red { get { return Color.FromArgb(0xff0000); } }
+        public static Color White { get { return Color.FromArgb(0xffffff); } }
+        public static Color Yellow0 { get { return Color.FromArgb(0xffff00); } }
+        public static Color Yellow1 { get { return Color.FromArgb(0xf6ea00); } }
+        public static Color Transparent { get { return Color.Transparent; } }
+        public static Color None { get { return Color.Empty; } }
     }
 }
 

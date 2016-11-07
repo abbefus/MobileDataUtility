@@ -11,6 +11,8 @@ namespace VegsysManager.Classes
         public short F_COLUMN_START = 5;
         public Dictionary<string, short> F_ROW = new Dictionary<string, short>
         {
+            { "SiteID", 3 },
+
             { "F1_1", 6 },
             { "F1_2", 7 },
             { "F1_3", 8 },
