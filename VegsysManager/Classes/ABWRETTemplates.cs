@@ -8,6 +8,30 @@ namespace VegsysManager.Classes
 {
     class WhiteFormV1_0
     {
+
+
+        public static string FormatSiteInfo(string sitename, string sitelocation)
+        {
+            string spaces = new string(' ', 143 - sitename.Length);
+            return string.Format("Site Name: {0}{1}Site Location: {2}", sitename, spaces, sitelocation);
+        }
+        public static string FormatInvestigatorInfo(string investigator, DateTime date)
+        {
+            string spaces = new string(' ', 136 - investigator.Length);
+            return string.Format("Investigator's Name: {0}{1}Date: {2}", investigator, spaces, date.ToLongDateString());
+        }
+
+        public short CP_COLUMN = 1;
+        public Dictionary<string, short> CP_ROW = new Dictionary<string, short>
+        {
+            { "WetlandID", 1 },
+            { "Observers", 2 },
+            { "SurveyDate", 3 },
+            { "Town", 4 },
+            { "Lat", 5 },
+            { "Lon", 6 },
+        };
+
         public short F_COLUMN_START = 5;
         public Dictionary<string, short> F_ROW = new Dictionary<string, short>
         {
@@ -59,6 +83,8 @@ namespace VegsysManager.Classes
             { "F9_3", 47 },
             { "F9_4", 48 },
             { "F9_5", 49 },
+
+            { "F9_6", 50 },
 
             { "F10_1", 52 },
             { "F10_2", 53 },
