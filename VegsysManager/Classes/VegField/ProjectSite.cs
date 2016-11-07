@@ -17,10 +17,11 @@ namespace VegsysManager.Classes
             ProjectSite projectsite = new ProjectSite();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     projectsite, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column], t)
                 );
             }
             return projectsite;

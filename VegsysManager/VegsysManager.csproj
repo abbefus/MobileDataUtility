@@ -119,23 +119,26 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Classes\Database\DataFormF.cs" />
-    <Compile Include="Classes\Database\WildlifeIncidental.cs" />
-    <Compile Include="Classes\Database\WetlandHydrology.cs" />
-    <Compile Include="Classes\Database\SpeciesObserved.cs" />
-    <Compile Include="Classes\Database\SoilObs.cs" />
-    <Compile Include="Classes\Database\SiteSurvey.cs" />
-    <Compile Include="Classes\Database\SiteLSD.cs" />
-    <Compile Include="Classes\Database\Site.cs" />
-    <Compile Include="Classes\Database\Project.cs" />
-    <Compile Include="Classes\Database\ProjectSite.cs" />
-    <Compile Include="Classes\Database\HerbPlotSummary.cs" />
-    <Compile Include="Classes\Database\DataFormF2.cs" />
+    <Compile Include="Classes\ABWRETTemplates.cs" />
+    <Compile Include="Classes\VegField\DataFormF.cs" />
+    <Compile Include="Classes\VegField\WildlifeIncidental.cs" />
+    <Compile Include="Classes\VegField\WetlandHydrology.cs" />
+    <Compile Include="Classes\VegField\SpeciesObserved.cs" />
+    <Compile Include="Classes\VegField\SoilObs.cs" />
+    <Compile Include="Classes\VegField\SiteSurvey.cs" />
+    <Compile Include="Classes\VegField\SiteLSD.cs" />
+    <Compile Include="Classes\VegField\Site.cs" />
+    <Compile Include="Classes\VegField\Project.cs" />
+    <Compile Include="Classes\VegField\ProjectSite.cs" />
+    <Compile Include="Classes\VegField\HerbPlotSummary.cs" />
+    <Compile Include="Classes\VegField\DataFormF2.cs" />
     <Compile Include="Classes\DataReaderExtensions.cs" />
     <Compile Include="Classes\LatLongCalc.cs" />
+    <Compile Include="Classes\SDFUpload.cs" />
     <Compile Include="Classes\SqlCeUtils.cs" />
     <Compile Include="Classes\SqlUtils.cs" />
-    <Compile Include="Classes\Database\VegsysDB.cs" />
+    <Compile Include="Classes\VegField\VegsysDB.cs" />
+    <Compile Include="Classes\Vegsys\DataFormF.cs" />
     <Compile Include="Converters.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -160,12 +163,14 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <Compile Include="MainWindow.SDFUpload.cs" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="Resources\ABWRET-A-WhiteForm_V1_0.xlsm" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

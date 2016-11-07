@@ -9,7 +9,7 @@ namespace VegsysManager.Classes
 {
     public static class SqlDataReaderExtensions
     {
-        public static int SafeGetInt32(this SqlDataReader reader,
+        public static Int32 SafeGetInt32(this SqlDataReader reader,
                                        string columnName, int defaultValue = 0)
         {
             int ordinal = reader.GetOrdinal(columnName);
@@ -23,6 +23,21 @@ namespace VegsysManager.Classes
                 return defaultValue;
             }
         }
+        public static Int16 SafeGetInt16(this SqlDataReader reader,
+                               string columnName, Int16 defaultValue = 0)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetInt16(ordinal);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
         public static string SafeGetString(this SqlDataReader reader,
                                        string columnName, string defaultValue = "")
         {

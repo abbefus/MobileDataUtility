@@ -10,6 +10,9 @@ namespace VegsysManager.Classes
 {
     class SqlUtils
     {
+
+        //cmd.Parameters.Add("@NewId", SqlDbType.Int).Direction = ParameterDirection.Output;
+        //if property name in outputparams, set ParameterDirection.Output
         public static void AddParametersFrom<T>(T obj, SqlCommand dbcommand)
         {
             List<SqlParameter> parameters = new List<SqlParameter>();

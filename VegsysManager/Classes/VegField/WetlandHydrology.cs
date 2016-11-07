@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             WetlandHydrology wetlandhydro = new WetlandHydrology();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     wetlandhydro, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column],t)
                 );
             }
             return wetlandhydro;

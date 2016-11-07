@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             Site site = new Site();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     site, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column], t)
                 );
             }
             return site;
@@ -50,9 +51,9 @@ namespace VegsysManager.Classes
         public string Comments { get; set; }
         public bool QAed { get; set; }
         public string CreatedBy { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime? CreateDate { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
         public double? HDOP { get; set; }
         public double? PDOP { get; set; }
         public double? VDOP { get; set; }

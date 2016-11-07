@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             WildlifeIncidental wildlifeincidental = new WildlifeIncidental();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     wildlifeincidental, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column], t)
                 );
             }
             return wildlifeincidental;
@@ -31,7 +32,7 @@ namespace VegsysManager.Classes
         public string Sex { get; set; }
         public byte? ObservationTypeID { get; set; }
         public byte? FeatureTypeID { get; set; }
-        public DateTime ObservationDate { get; set; }
+        public DateTime? ObservationDate { get; set; }
         public string Biologist { get; set; }
         public string ObservationID { get; set; }
         public Int32? Easting { get; set; }
@@ -53,11 +54,11 @@ namespace VegsysManager.Classes
         public string Meridian { get; set; }
         public string Notes { get; set; }
         public string CreatedBy { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime? CreateDate { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
         public string QAedBy { get; set; }
-        public DateTime QADate { get; set; }
+        public DateTime? QADate { get; set; }
         public bool? QAed { get; set; }
         public Guid WLObsGuid { get; set; }
     }

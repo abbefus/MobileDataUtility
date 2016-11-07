@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             SoilObs soilobs = new SoilObs();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     soilobs, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column],t)
                 );
             }
             return soilobs;

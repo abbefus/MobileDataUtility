@@ -17,10 +17,11 @@ namespace VegsysManager.Classes
             DataFormF2 dataformf = new DataFormF2();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     dataformf, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column],t)
                 );
             }
             return dataformf;

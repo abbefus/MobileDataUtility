@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             Project project = new Project();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     project, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column], t)
                 );
             }
             return project;

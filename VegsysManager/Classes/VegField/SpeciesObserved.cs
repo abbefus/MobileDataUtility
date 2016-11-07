@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             SpeciesObserved speciesobs = new SpeciesObserved();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     speciesobs, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column],t)
                 );
             }
             return speciesobs;
@@ -56,9 +57,9 @@ namespace VegsysManager.Classes
         public bool? TreeShrubFlag { get; set; }
         public bool? AnBRegenFlag { get; set; }
         public string CreatedBy { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime? CreateDate { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
         public string RPStatus { get; set; }
         public Single? DensityDistribution { get; set; }
         public Int32? tsn { get; set; }

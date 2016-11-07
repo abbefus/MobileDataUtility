@@ -14,11 +14,16 @@ namespace VegsysManager.Classes
             SiteSurvey sitesurvey = new SiteSurvey();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     sitesurvey, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column],t)
                 );
+                if (column == "Sketch" && sitesurvey.Sketch == null)
+                {
+                    sitesurvey.Sketch = new byte[0];
+                }
             }
             return sitesurvey;
         } //creates a SiteSurvey from an sqlce or (maybe also) sql database row
@@ -27,7 +32,7 @@ namespace VegsysManager.Classes
         public Guid ProjectGuid { get; set; }
         public Guid SiteGuid { get; set; }
         public bool? WildlifeObserved { get; set; }
-        public DateTime SurveyDate { get; set; }
+        public DateTime? SurveyDate { get; set; }
         public string SurveyComments { get; set; }
         public Int16? TotalCanopy { get; set; }
         public Int16? TotalSubCanopy { get; set; }
@@ -38,8 +43,8 @@ namespace VegsysManager.Classes
         public Int32? TerrestrialLichenCover { get; set; }
         public string Observers { get; set; }
         public string StrucStageCode { get; set; }
-        public Int32 MoistureID { get; set; }
-        public Int32 NutrientID { get; set; }
+        public Int32? MoistureID { get; set; }
+        public Int32? NutrientID { get; set; }
         public string PermafrostDepth { get; set; }
         public string DepthtoWater { get; set; }        //-----inconsistent capitalization Matt!!!
         public string WtrChemComment { get; set; }
@@ -69,11 +74,11 @@ namespace VegsysManager.Classes
         public string WetlandClass { get; set; }
         public bool? BryophyteSample { get; set; }
         public string Createdby { get; set; }       //-----inconsistent capitalization Matt!!!
-        public DateTime CreateDate { get; set; }
+        public DateTime? CreateDate { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
         public string QCedBy { get; set; }
-        public DateTime QCDate { get; set; }
+        public DateTime? QCDate { get; set; }
         public string QCStatus { get; set; }
         public bool? LichenSample { get; set; }
         public double? DepthToSaturation { get; set; }

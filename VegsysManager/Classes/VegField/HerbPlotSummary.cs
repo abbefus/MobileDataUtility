@@ -17,10 +17,11 @@ namespace VegsysManager.Classes
             HerbPlotSummary herbplotsummary = new HerbPlotSummary();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     herbplotsummary, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column],t)
                 );
             }
             return herbplotsummary;
@@ -40,8 +41,8 @@ namespace VegsysManager.Classes
         public Single? P9CC { get; set; }
         public Single? P10CC { get; set; }
         public string CreatedBy { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime? CreateDate { get; set; }
         public string UpdatedBy { get; set; }
-        public DateTime UpdateDate { get; set; }
+        public DateTime? UpdateDate { get; set; }
     }
 }

@@ -14,10 +14,11 @@ namespace VegsysManager.Classes
             SiteLSD sitelsd = new SiteLSD();
             foreach (string column in columns)
             {
+                Type t = dffType.GetProperty(column).PropertyType;
                 dffType.GetProperty(column).SetValue
                 (
                     sitelsd, 
-                    SqlCeConversion.CheckDBNull(row[column])
+                    SqlCeConversion.CheckDBNull(row[column], t)
                 );
             }
             return sitelsd;
