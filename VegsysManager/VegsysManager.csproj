@@ -116,6 +116,7 @@
     <Compile Include="ABModalDialog.xaml.cs">
       <DependentUpon>ABModalDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Classes\ABUtils.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -139,6 +140,7 @@
     <Compile Include="Classes\SqlCeUtils.cs" />
     <Compile Include="Classes\SqlUtils.cs" />
     <Compile Include="Classes\VegField\VegsysDB.cs" />
+    <Compile Include="Classes\Vegsys\DataFormS.cs" />
     <Compile Include="Classes\Vegsys\DataFormF.cs" />
     <Compile Include="Converters.cs" />
     <Compile Include="MainWindow.xaml.cs">

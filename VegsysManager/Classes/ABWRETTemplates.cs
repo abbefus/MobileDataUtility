@@ -1,25 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VegsysManager.Classes
 {
     class WhiteFormV1_0
     {
-
-
-        public static string FormatSiteInfo(string sitename, string sitelocation)
+        public static string FormatFSiteInfo(string sitename, string sitelocation)
         {
-            string spaces = new string(' ', 143 - sitename.Length);
+            string spaces = new string(' ', 148 - sitename.Length);
             return string.Format("Site Name: {0}{1}Site Location: {2}", sitename, spaces, sitelocation);
         }
-        public static string FormatInvestigatorInfo(string investigator, DateTime date)
+        public static string FormatSSiteInfo(string sitename, string sitelocation)
+        {
+            return string.Format("Site Name and Location: {0} located at {2}", sitename, sitelocation);
+        }
+        public static string FormatFInvestigatorInfo(string investigator, DateTime date)
         {
             string spaces = new string(' ', 136 - investigator.Length);
             return string.Format("Investigator's Name: {0}{1}Date: {2}", investigator, spaces, date.ToLongDateString());
         }
+        public static string FormatSInvestigatorInfo(string investigator)
+        {
+            return string.Format("Investigator: {0}", investigator);
+        }
+        public static string FormatSDateInfo(DateTime date)
+        {
+            return string.Format("Date: {0}", date.ToLongDateString());
+        }
+
 
         public short CP_COLUMN = 1;
         public Dictionary<string, short> CP_ROW = new Dictionary<string, short>
@@ -54,7 +62,7 @@ namespace VegsysManager.Classes
             { "F3_4", 20 },
             { "F3_5", 21 },
             { "F3_6", 22 },
-            
+
             { "F4_1", 24 },
             { "F4_2", 25 },
             { "F4_3", 26 },
@@ -105,7 +113,7 @@ namespace VegsysManager.Classes
             { "F12_7", 68 },
 
             { "F13_1", 69 },
-           
+
             { "F14_1", 71 },
             { "F14_2", 72 },
             { "F14_3", 73 },
@@ -379,6 +387,75 @@ namespace VegsysManager.Classes
             { "F69_6", 333 },
 
             { "F70_1", 335 }
+        };
+
+
+        public short S_COLUMN_START = 7;
+        public Dictionary<string, short> S_ROW = new Dictionary<string, short>
+        {
+            { "SiteID", 2 },
+
+            { "S5_1", 4 },
+            { "S5_2", 5 },
+            { "S5_3", 6 },
+            { "S5_4", 7 },
+
+            { "S5_5", 11 },
+            { "S5_6", 12 },
+            { "S5_7", 14 },
+            { "S5_8", 15 },
+            
+
+            { "S6_1", 20 },
+            { "S6_2", 21 },
+            { "S6_3", 22 },
+            { "S6_4", 23 },
+            { "S6_5", 24 },
+            { "S6_6", 25 },
+
+            { "S6_7", 28 },
+            { "S6_8", 29 },
+            { "S6_9", 30 },
+
+
+            { "S7_1", 35 },
+            { "S7_2", 36 },
+            { "S7_3", 37 },
+            { "S7_4", 38 },
+
+            { "S7_5", 41 },
+            { "S7_6", 42 },
+            { "S7_7", 43 },
+
+
+            { "S8_1", 48 },
+            { "S8_2", 49 },
+            { "S8_3", 50 },
+            { "S8_4", 51 },
+            { "S8_5", 52 },
+            { "S8_6", 53 },
+            { "S8_7", 54 },
+            { "S8_8", 55 },
+
+            { "S8_9", 58 },
+            { "S8_10", 59 },
+            { "S8_11", 60 },
+            { "S8_12", 61 },
+
+
+            { "S9_1", 66 },
+            { "S9_2", 67 },
+            { "S9_3", 68 },
+            { "S9_4", 69 },
+            { "S9_5", 70 },
+            { "S9_6", 71 },
+            { "S9_7", 72 },
+            { "S9_8", 73 },
+
+            { "S9_9", 76 },
+            { "S9_10", 77 },
+            { "S9_11", 78 },
+            { "S9_12", 79 },
         };
     }
 }

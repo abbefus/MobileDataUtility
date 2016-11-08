@@ -27,7 +27,9 @@ using System.Drawing;
 using VisualTreeHelper = System.Windows.Media.VisualTreeHelper;
 using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 using Colors = System.Windows.Media.Colors;
-using NPOI.SS.UserModel;
+using SS = NPOI.SS.UserModel;
+using FileUtils = ABUtils.FileUtils;
+using NPOI.XSSF.UserModel.Extensions;
 
 namespace VegsysManager
 {
@@ -36,8 +38,6 @@ namespace VegsysManager
     //          Code will add the project, get the id and guid back - then update the other tables with the new project info
     public partial class MainWindow : SecuredWindow
     {
-        private string outfile = @"C:\TEMP\outfile.xlsm"; //use file incrementor
-
         public string VEG_CONN_STRING = "Data Source=sqlprod3\\sql2008;Initial Catalog={0};User Id=developer;Password=sp1d3r5!;";
         public string FIELD_DB = "VegField_2014";
         public string PROD_DB = "VEGSYS_2014";
@@ -83,79 +83,100 @@ namespace VegsysManager
             // format sitesurvey data
             double lat = siteRows.Select(x => x["Lat"]).Cast<double>().Average();
             double lon = Math.Abs(siteRows.Select(x => x["Lon"]).Cast<double>().Average());
-            string latitude = string.Format("{0:#.#} N", lat);
-            string longitude = string.Format("{0:#.#} W", lon);
-            string location = string.Format("{0}N, {1}W", latitude, longitude);
+            string latitude = string.Format("{0:#.#}N", lat);
+            string longitude = string.Format("{0:#.#}W", lon);
+            string location = string.Format("{0}, {1}", latitude, longitude);
             DateTime date = siteRows.Select(x => (DateTime)x["SurveyDate"]).FirstOrDefault();
-            string sitestring;
             string sites = string.Join(", ", siteRows.Select(x => x["WetlandID"].ToString()));
             string[] investigators = siteRows.Select(x => x["Observers"].ToString()).Distinct().ToArray();
             string investigator = string.Join(", ", investigators);
             if (investigator.Length > 50) investigator = investigators.FirstOrDefault();
 
+            // write tabs
+            WriteToCoverPg(template, map, siteIDs, sites, location, investigator, date, latitude, longitude);
+            WriteToF(template, map, siteIDs, sites, location, investigator, siteRows);
 
-            // create a style
-            XSSFCreationHelper helper = (XSSFCreationHelper)template.GetCreationHelper();
-            XSSFCellStyle cellstyle = CreateCellStyle(template, NPOI.SS.UserModel.HorizontalAlignment.Center,NPOI.SS.UserModel.VerticalAlignment.Center);
 
+            // save
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "Excel Macro File|*.xlsm";
+            sfd.Title = "Save ABWRET Form";
+            string filename = string.Format("ABWRET_{0}_{1}", siteRows.Select(x => x["WetlandID"].ToString()).FirstOrDefault(), DateTime.Now.ToString("yyyyMMdd"));
+            sfd.FileName = filename;
+            if (sfd.ShowDialog() ?? false)
+            {
+                sfd.FileName = FileUtils.Increment(sfd.FileName);
+                using (FileStream file = sfd.OpenFile() as FileStream)
+                {
+                    template.Write(file);
+                    file.Close();
+                }
+            }
+
+
+            
+        }
+
+        private void WriteToCoverPg(XSSFWorkbook template, WhiteFormV1_0 map, int[] siteIDs, string sites,
+                                    string location, string investigator, DateTime date, string latitude, string longitude)
+        {
+            XSSFCellStyle cellstyle = CreateCellStyle(template, SS.HorizontalAlignment.Center, SS.VerticalAlignment.Center, 0, SS.BorderStyle.Thin);
             // write to "CoverPg" spreadsheet
             XSSFSheet cpsheet = (XSSFSheet)template.GetSheet("CoverPg");
-            sitestring = siteIDs.Length > 2 ? string.Format("{0} sites", siteIDs.Length) : sites;
+            string sitestring = siteIDs.Length > 2 ? string.Format("{0} sites", siteIDs.Length) : sites;
 
             // WetlandID
             XSSFCell xssfcell = (XSSFCell)cpsheet.GetRow(map.CP_ROW["WetlandID"]).GetCell(map.CP_COLUMN);
             xssfcell.CellStyle = cellstyle;
-            XSSFRichTextString richtext = CreateRichText(template, sitestring, ExcelColors.Pink, "Arial", 10, true);
+            XSSFRichTextString richtext = CreateRichText(template, sitestring, ExcelColors.Purple0, "Arial", 10, true);
             xssfcell.SetCellValue(richtext);
 
             // Observers
             xssfcell = (XSSFCell)cpsheet.GetRow(map.CP_ROW["Observers"]).GetCell(map.CP_COLUMN);
             xssfcell.CellStyle = cellstyle;
-            richtext = CreateRichText(template, investigator, ExcelColors.Pink, "Arial", 10, true);
+            richtext = CreateRichText(template, investigator, ExcelColors.Purple0, "Arial", 10, true);
             xssfcell.SetCellValue(richtext);
             if (investigator.Length > 26) xssfcell.Row.HeightInPoints = 30;
 
             // SurveyDate
             xssfcell = (XSSFCell)cpsheet.GetRow(map.CP_ROW["SurveyDate"]).GetCell(map.CP_COLUMN);
             xssfcell.CellStyle = cellstyle;
-            richtext.String = date.ToShortDateString();
+            richtext = CreateRichText(template, date.ToShortDateString(), ExcelColors.Purple0, "Arial", 10, true);
             xssfcell.SetCellValue(richtext);
 
             // Latitude
             xssfcell = (XSSFCell)cpsheet.GetRow(map.CP_ROW["Lat"]).GetCell(map.CP_COLUMN);
             xssfcell.CellStyle = cellstyle;
-            richtext.String = latitude;
+            richtext = CreateRichText(template, latitude, ExcelColors.Purple0, "Arial", 10, true);
             xssfcell.SetCellValue(richtext);
 
             //Longitude
             xssfcell = (XSSFCell)cpsheet.GetRow(map.CP_ROW["Lon"]).GetCell(map.CP_COLUMN);
             xssfcell.CellStyle = cellstyle;
-            richtext.String = longitude;
+            richtext = CreateRichText(template, longitude, ExcelColors.Purple0, "Arial", 10, true);
             xssfcell.SetCellValue(richtext);
-
-
-
-            // write to "F" spreadsheet
+        }
+        private void WriteToF(XSSFWorkbook template, WhiteFormV1_0 map, int[] siteIDs, string sites, 
+                                    string location, string investigator, IEnumerable<DataRow> siteRows)
+        {
+            string sitestring;
             XSSFSheet fsheet = (XSSFSheet)template.GetSheet("F");
-            
             // fill out header information
             if (siteIDs.Length > 2)
             {
-                
-                sitestring = WhiteFormV1_0.FormatSiteInfo(string.Format("Showing data for {0} sites", siteIDs.Length), location);
+                sitestring = WhiteFormV1_0.FormatFSiteInfo(string.Format("Showing data for {0} sites", siteIDs.Length), location);
             }
             else
             {
-                sitestring = WhiteFormV1_0.FormatSiteInfo(sites, location);
+                sitestring = WhiteFormV1_0.FormatFSiteInfo(sites, location);
             }
             SetValue(fsheet, 0, 0, sitestring);
 
-            string infostring = WhiteFormV1_0.FormatInvestigatorInfo(investigator, DateTime.Now);
+            string infostring = WhiteFormV1_0.FormatFInvestigatorInfo(investigator, DateTime.Now);
             SetValue(fsheet, 1, 0, infostring);
 
             // fill out matrix
             VEGSYS.DataFormF[] dffs = QueryDataFormF(siteIDs);
-            
             for (int i = 0; i < dffs.Length; i++)
             {
                 foreach (string p in typeof(VEGSYS.DataFormF).GetProperties().Select(x => x.Name))
@@ -167,30 +188,12 @@ namespace VegsysManager
 
                     if (p == "SiteID")
                     {
-                        
-
-
-                        //helper = (XSSFCreationHelper)template.GetCreationHelper();
-                        //cellstyle = (XSSFCellStyle)template.CreateCellStyle();
-                        //cellstyle.Rotation = 90;
-                        //cellstyle.Alignment = NPOI.SS.UserModel.HorizontalAlignment.Center;
-                        //cellstyle.VerticalAlignment = NPOI.SS.UserModel.VerticalAlignment.Center;
-                        //cellstyle.WrapText = false;
-                        //font = new XSSFFont();
-                        //font.IsBold = true;
-                        //font.SetColor(new XSSFColor(ExcelColors.SkyBlue));
-
-                        //font.FontName = "Arial Narrow";
-                        cellstyle = CreateCellStyle(template, NPOI.SS.UserModel.HorizontalAlignment.Center, NPOI.SS.UserModel.VerticalAlignment.Center, true, 90);
-                        xssfcell = (XSSFCell)fsheet.GetRow(row).GetCell(column);
+                        XSSFCellStyle cellstyle = CreateCellStyle(template, SS.HorizontalAlignment.Center, SS.VerticalAlignment.Center, 90, SS.BorderStyle.Thin, ExcelColors.SkyBlue);
+                        XSSFCell xssfcell = (XSSFCell)fsheet.GetRow(row).GetCell(column);
                         xssfcell.CellStyle = cellstyle;
 
                         string value = siteRows.Where(x => (int)x[p] == dffs[i].SiteID).FirstOrDefault()["WetlandID"].ToString();
-                        //richtext = (XSSFRichTextString)helper.CreateRichTextString(value);
-
-                        richtext = CreateRichText(template, value, ExcelColors.SkyBlue, "Arial Narrow", 10, true);
-
-                        //richtext.ApplyFont(font);
+                        XSSFRichTextString richtext = CreateRichText(template, value, ExcelColors.SkyBlue, "Arial Narrow", 10, true);
                         xssfcell.SetCellValue(richtext);
                         fsheet.GetRow(row).HeightInPoints = 120;
                     }
@@ -201,44 +204,59 @@ namespace VegsysManager
                     }
                 }
             }
+        }
+        private void WriteToS(XSSFWorkbook template, WhiteFormV1_0 map, int[] siteIDs, string sites,
+                                    string location, string investigator, IEnumerable<DataRow> siteRows)
+        {
+            string sitestring;
+            XSSFSheet ssheet = (XSSFSheet)template.GetSheet("S");
 
-            using (FileStream file = new FileStream(outfile, FileMode.CreateNew, FileAccess.Write))
+            //Site Name and Location:
+            sitestring = siteIDs.Length > 2 ? 
+                WhiteFormV1_0.FormatSSiteInfo(string.Format("Showing data for {0} sites", siteIDs.Length), location) :
+                WhiteFormV1_0.FormatSSiteInfo(sites, location);
+            SetValue(ssheet, 0, 0, sitestring);
+
+            //Investigator:
+            string infostring = WhiteFormV1_0.FormatSInvestigatorInfo(investigator);
+            SetValue(ssheet, 0, 3, infostring);
+
+            //Date:
+            string datestring = WhiteFormV1_0.FormatSDateInfo(DateTime.Now);
+            SetValue(ssheet, 0, 4, datestring);
+
+            // fill out matrix
+            VEGSYS.DataFormF[] dffs = QueryDataFormF(siteIDs);
+            for (int i = 0; i < dffs.Length; i++)
             {
-                template.Write(file);
-                file.Close();
+                foreach (string p in typeof(VEGSYS.DataFormF).GetProperties().Select(x => x.Name))
+                {
+                    if (p == "DFFID") continue;
+                    int row = map.F_ROW[p];
+                    int column = map.F_COLUMN_START + i;
+                    PropertyInfo pi = dffs[i].GetType().GetProperty(p);
+
+                    if (p == "SiteID")
+                    {
+                        XSSFCellStyle cellstyle = CreateCellStyle(template, SS.HorizontalAlignment.Center, SS.VerticalAlignment.Center, 90, SS.BorderStyle.Thin, ExcelColors.SkyBlue);
+                        XSSFCell xssfcell = (XSSFCell)fsheet.GetRow(row).GetCell(column);
+                        xssfcell.CellStyle = cellstyle;
+
+                        string value = siteRows.Where(x => (int)x[p] == dffs[i].SiteID).FirstOrDefault()["WetlandID"].ToString();
+                        XSSFRichTextString richtext = CreateRichText(template, value, ExcelColors.SkyBlue, "Arial Narrow", 10, true);
+                        xssfcell.SetCellValue(richtext);
+                        fsheet.GetRow(row).HeightInPoints = 120;
+                    }
+                    else
+                    {
+                        double value = BitToDouble(pi.GetValue(dffs[i]));
+                        SetValue(fsheet, row, column, value);
+                    }
+                }
             }
         }
 
-        private XSSFRichTextString CreateRichText(XSSFWorkbook wb, string text, Color color, 
-            string fontName="Arial", short fontsize=10,bool isBold=false, bool isItalic = false)
-        {
-            XSSFCreationHelper helper =(XSSFCreationHelper)wb.GetCreationHelper();
-            XSSFFont font = new XSSFFont();
-            font.IsBold = isBold;
-            font.IsItalic = isItalic;
-            font.SetColor(new XSSFColor(color));
-            font.FontHeightInPoints = fontsize;
-
-            font.FontName = fontName;
-            XSSFRichTextString richtext = (XSSFRichTextString)helper.CreateRichTextString(text);
-            richtext.ApplyFont(font);
-            return richtext;
-        }
-        private XSSFCellStyle CreateCellStyle(XSSFWorkbook wb, NPOI.SS.UserModel.HorizontalAlignment halign = 0, 
-            NPOI.SS.UserModel.VerticalAlignment valign = 0, bool wrapText = true, short rotation = 0)
-        {
-            XSSFCellStyle cellstyle = (XSSFCellStyle)wb.CreateCellStyle();
-            cellstyle.Rotation = rotation;
-            cellstyle.Alignment = halign;
-            cellstyle.VerticalAlignment = valign;
-            cellstyle.WrapText = wrapText;
-            cellstyle.BorderBottom = BorderStyle.Medium;
-            cellstyle.BorderLeft = BorderStyle.Medium;
-            cellstyle.BorderRight = BorderStyle.Medium;
-            cellstyle.BorderTop = BorderStyle.Medium;
-            return cellstyle;
-        }
-
+        //Queries
         private IEnumerable<DataRow> QuerySites(string[] sitenumbers)
         {
             string sitenumstring = string.Join("','", sitenumbers);
@@ -274,7 +292,6 @@ namespace VegsysManager
             }
             return dt.Rows.Cast<DataRow>();
         }
-
         private VEGSYS.DataFormF[] QueryDataFormF(int[] siteIDs)
         {
             List<VEGSYS.DataFormF> dffs = new List<VEGSYS.DataFormF>();
@@ -296,6 +313,43 @@ namespace VegsysManager
             return dffs.ToArray();
         }
 
+
+        //NPOI static functions
+        private static XSSFRichTextString CreateRichText(XSSFWorkbook wb, string text, Color color,
+            string fontName = "Arial", short fontsize = 10, bool isBold = false, bool isItalic = false)
+        {
+            XSSFCreationHelper helper = (XSSFCreationHelper)wb.GetCreationHelper();
+            XSSFFont font = new XSSFFont();
+            font.IsBold = isBold;
+            font.IsItalic = isItalic;
+            font.SetColor(new XSSFColor(color));
+            font.FontHeightInPoints = fontsize;
+
+            font.FontName = fontName;
+            XSSFRichTextString richtext = (XSSFRichTextString)helper.CreateRichTextString(text);
+            richtext.ApplyFont(font);
+            return richtext;
+        }
+        private static XSSFCellStyle CreateCellStyle(XSSFWorkbook wb, SS.HorizontalAlignment halign = 0,
+            SS.VerticalAlignment valign = 0, short rotation = 0, SS.BorderStyle borderStyle = 0,
+            Color? borderColor = null, bool wrapText = true)
+        {
+            XSSFCellStyle cellstyle = (XSSFCellStyle)wb.CreateCellStyle();
+            cellstyle.Rotation = rotation;
+            cellstyle.Alignment = halign;
+            cellstyle.VerticalAlignment = valign;
+            cellstyle.WrapText = wrapText;
+            cellstyle.BorderBottom = borderStyle;
+            cellstyle.BorderLeft = borderStyle;
+            cellstyle.BorderRight = borderStyle;
+            cellstyle.BorderTop = borderStyle;
+            borderColor = borderColor ?? ExcelColors.Black;
+            cellstyle.SetBorderColor(BorderSide.BOTTOM, new XSSFColor((Color)borderColor));
+            cellstyle.SetBorderColor(BorderSide.LEFT, new XSSFColor((Color)borderColor));
+            cellstyle.SetBorderColor(BorderSide.RIGHT, new XSSFColor((Color)borderColor));
+            cellstyle.SetBorderColor(BorderSide.TOP, new XSSFColor((Color)borderColor));
+            return cellstyle;
+        }
         public static void SetValue(XSSFSheet sheet, int row, int column, double value)
         {
             sheet.GetRow(row).GetCell(column).SetCellValue(value);
@@ -304,7 +358,7 @@ namespace VegsysManager
         {
             sheet.GetRow(row).GetCell(column).SetCellValue(value);
         }
-        public static void SetValue(XSSFSheet sheet, int row, int column, IRichTextString value)
+        public static void SetValue(XSSFSheet sheet, int row, int column, SS.IRichTextString value)
         {
             sheet.GetRow(row).GetCell(column).SetCellValue(value);
         }
@@ -315,7 +369,6 @@ namespace VegsysManager
             else
                 return Convert.ToDouble(Value);
         }
-
 
 
 
@@ -471,6 +524,7 @@ namespace VegsysManager
         public static Color Aqua { get { return Color.FromArgb(0x4bacc6); } }
         public static Color Aqua3 { get { return Color.FromArgb(0x92cddc); } }
         public static Color Aqua4 { get { return Color.FromArgb(0x31869b); } }
+        public static Color Black { get { return Color.FromArgb(0x000); } }
         public static Color SkyBlue { get { return Color.FromArgb(0x00b0f0); } }
         public static Color Grey { get { return Color.FromArgb(0xf2f2f2); } }
         public static Color Grey2 { get { return Color.FromArgb(0xd9d9d9); } }
