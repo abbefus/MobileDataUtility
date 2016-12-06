@@ -5,34 +5,43 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddSites2Vegsys", "AddSites2Vegsys\AddSites2Vegsys.csproj", "{EBF2C623-5D44-4956-AB50-976488E9360D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchyManager", "AddSTPs\ArchyManager.csproj", "{F1406A16-FD10-4D88-A384-2E609AA21CBA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VProManager", "VProManager\VProManager.csproj", "{820F0827-32CD-4BD1-A03A-6D6236B2AB85}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VegsysManager", "VegsysManager\VegsysManager.csproj", "{39158757-B2CA-480C-80DB-665C7B22DC37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchyManager", "ArchyManager\ArchyManager.csproj", "{F1406A16-FD10-4D88-A384-2E609AA21CBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		VProRelease|Any CPU = VProRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{EBF2C623-5D44-4956-AB50-976488E9360D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EBF2C623-5D44-4956-AB50-976488E9360D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBF2C623-5D44-4956-AB50-976488E9360D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBF2C623-5D44-4956-AB50-976488E9360D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBF2C623-5D44-4956-AB50-976488E9360D}.VProRelease|Any CPU.ActiveCfg = VProRelease|Any CPU
+		{EBF2C623-5D44-4956-AB50-976488E9360D}.VProRelease|Any CPU.Build.0 = VProRelease|Any CPU
 		{820F0827-32CD-4BD1-A03A-6D6236B2AB85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{820F0827-32CD-4BD1-A03A-6D6236B2AB85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{820F0827-32CD-4BD1-A03A-6D6236B2AB85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{820F0827-32CD-4BD1-A03A-6D6236B2AB85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{820F0827-32CD-4BD1-A03A-6D6236B2AB85}.VProRelease|Any CPU.ActiveCfg = VProRelease|Any CPU
+		{820F0827-32CD-4BD1-A03A-6D6236B2AB85}.VProRelease|Any CPU.Build.0 = VProRelease|Any CPU
 		{39158757-B2CA-480C-80DB-665C7B22DC37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{39158757-B2CA-480C-80DB-665C7B22DC37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39158757-B2CA-480C-80DB-665C7B22DC37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39158757-B2CA-480C-80DB-665C7B22DC37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39158757-B2CA-480C-80DB-665C7B22DC37}.VProRelease|Any CPU.ActiveCfg = VProRelease|Any CPU
+		{39158757-B2CA-480C-80DB-665C7B22DC37}.VProRelease|Any CPU.Build.0 = VProRelease|Any CPU
+		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.VProRelease|Any CPU.ActiveCfg = VProRelease|Any CPU
+		{F1406A16-FD10-4D88-A384-2E609AA21CBA}.VProRelease|Any CPU.Build.0 = VProRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
