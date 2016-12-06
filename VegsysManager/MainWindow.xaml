@@ -68,8 +68,8 @@
             </r:Ribbon.ApplicationMenu>
             <r:RibbonTab Header="ABWRET" x:Name="vegsys_tab" ContextMenu="{x:Null}">
                 <r:RibbonGroup x:Name="staging_rg" Header="Staging Database" ContextMenu="{x:Null}">
-                    <r:RibbonToggleButton x:Name="connect2veg_btn" Label="Connect To Vegsys" LargeImageSource="Images/connect-icon.png" ContextMenu="{x:Null}"
-                                          IsChecked="{Binding VegConn, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                    <!--<r:RibbonToggleButton x:Name="connect2veg_btn" Label="Connect To Vegsys" LargeImageSource="Images/connect-icon.png" ContextMenu="{x:Null}"
+                                          IsChecked="{Binding VegConn, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>-->
                     <r:RibbonButton x:Name="export_btn" Label="Export ABWRET" LargeImageSource="Images/page-white-excel-icon.png" ContextMenu="{x:Null}"
                                     Click="export_btn_Click"/>
                     <r:RibbonButton x:Name="manualsync_btn" Label="Sync SDF" LargeImageSource="Images/database-save-icon.png" ContextMenu="{x:Null}"

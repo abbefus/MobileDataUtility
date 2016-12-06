@@ -1,31 +1,43 @@
 ﻿using ABSSTools;
+using ABUtils;
 using Microsoft.Win32;
+using Microsoft.Windows.Controls.Ribbon;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace ArchyManager
 {
 
-    public partial class MainWindow : Window
+    public partial class ArchyMain : SecuredWindow
     {
         public const string AEON_CONN_STRING = "Data Source=sqlprod3\\sql2008;Initial Catalog=Archy2014;User Id=developer;Password=sp1d3r5!;";
         private SqlConnection dbConn;
         private SqlCommand dbcommand;
         private string SQL;
         
-        public MainWindow()
+        public ArchyMain()
         {
             InitializeComponent();
-
-            Connect();
-
+#if DEBUG
+            @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\BC1235Tools\PDFToExcel\bin\Debug\PDFToData.exe", //fixed folder location
+                    "31-DEC-2016"  //expiry date
+#elif FINAL
+                  @"\\CD1002-F03\GEOMATICS\Utilities\GIS\PDFToData.exe", //fixed folder location
+                    "31-DEC-2016"  //expiry date
+#elif RELEASE
+                  @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\BC1235Tools\PDFToExcel\bin\Release\PDFToData.exe", //fixed folder location
+                    "31-DEC-2016"  //expiry date
+#endif
         }
 
         private ShovelTestPit[] ReadSTPs(DataSet dataset)
@@ -326,6 +338,58 @@ namespace ArchyManager
             return Math.PI * degrees / 180;
         }
 
+
+#region Ribbon
+
+        // switches content in mainframe
+        private void Ribbon_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+        }
+        private void ribbon_Loaded(object sender, RoutedEventArgs e)
+        {
+            // removes quick action toolbar (styling)
+            Grid child = VisualTreeHelper.GetChild((DependencyObject)sender, 0) as Grid;
+            if (child != null)
+            {
+                child.RowDefinitions[0].Height = new GridLength(0);
+            }
+            Console.SetOut(new ConsolWriter(status_tb));
+            UpdateStatus(StatusType.Success, string.Format("This version of ArchyManager will expire in {0} days.", DaysLeft));
+        }
+        private void RibbonApplicationMenu_Loaded(object sender, RoutedEventArgs e)
+        {
+            // removes 'recent' column in application menu (styling)
+            RibbonApplicationMenu am = sender as RibbonApplicationMenu;
+            Grid grid = (am.Template.FindName("MainPaneBorder", am) as Border).Parent as Grid;
+            grid.ColumnDefinitions[2].Width = new GridLength(0);
+        }
+
+
+#endregion
+
+
+        public enum StatusType
+        {
+            Success,
+            Failure
+        }
+        public void UpdateStatus(StatusType type, string msg)
+        {
+            status_tb.Foreground = type == StatusType.Failure ?
+                new SolidColorBrush(Colors.Red) :
+                new SolidColorBrush(Colors.Green);
+            Console.WriteLine(msg);
+        }
+
+        private void openSDF_btn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void exit_btn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 
     public class ShovelTestPit
@@ -423,8 +487,8 @@ namespace ArchyManager
                 return defaultValue;
             }
         }
-        public static int SafeGetInt16(this SqlDataReader reader,
-                                       string columnName, int defaultValue = 0)
+        public static short SafeGetInt16(this SqlDataReader reader,
+                                       string columnName, short defaultValue = 0)
         {
             int ordinal = reader.GetOrdinal(columnName);
 
@@ -478,6 +542,27 @@ namespace ArchyManager
             {
                 return Guid.Empty;
             }
+        }
+    }
+    public class ConsolWriter : TextWriter
+    {
+        private TextBlock textblock;
+        public ConsolWriter(TextBlock textbox)
+        {
+            textblock = textbox;
+        }
+        public override void Write(string value)
+        {
+            textblock.Text = value;
+        }
+        public override void WriteLine(string value)
+        {
+            textblock.Text = value;
+        }
+
+        public override Encoding Encoding
+        {
+            get { return Encoding.ASCII; }
         }
     }
 

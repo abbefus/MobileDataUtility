@@ -7,27 +7,29 @@ namespace VegsysManager.Classes
     {
         public static string FormatFSiteInfo(string sitename, string sitelocation)
         {
-            string spaces = new string(' ', 148 - sitename.Length);
+            string spaces = new string(' ', 146 - sitename.Length);
             return string.Format("Site Name: {0}{1}Site Location: {2}", sitename, spaces, sitelocation);
         }
         public static string FormatSSiteInfo(string sitename, string sitelocation)
         {
-            return string.Format("Site Name and Location: {0} located at {2}", sitename, sitelocation);
+            return string.Format("Site Name and Location: {0} located at {1}", sitename, sitelocation);
         }
-        public static string FormatFInvestigatorInfo(string investigator, DateTime date)
+        public static string FormatFInvestigatorInfo(string investigator, string date)
         {
             string spaces = new string(' ', 136 - investigator.Length);
-            return string.Format("Investigator's Name: {0}{1}Date: {2}", investigator, spaces, date.ToLongDateString());
+            return string.Format("Investigator's Name: {0}{1}Date: {2}", investigator, spaces, date);
         }
         public static string FormatSInvestigatorInfo(string investigator)
         {
             return string.Format("Investigator: {0}", investigator);
         }
-        public static string FormatSDateInfo(DateTime date)
+        public static string FormatSDateInfo(string date)
         {
-            return string.Format("Date: {0}", date.ToLongDateString());
+            return string.Format("Date: {0}", date);
         }
 
+        public static readonly string F_COLUMNS = "SiteID, DFFID, F1_1, F1_2, F1_3, F1_4, F2_1, F2_2, F2_3, F2_4, F2_5, F3_1, F3_2, F3_3, F3_4, F3_5, F3_6, F4_1, F4_2, F4_3, F4_4, F4_5, F4_6, F5_1, F5_2, F5_3, F5_4, F5_5, F6_1, F7_1, F8_1, F8_2, F8_3, F8_4, F8_5, F9_1, F9_2, F9_3, F9_4, F9_5, F9_6, F10_1, F10_2, F10_3, F10_4, F10_5, F11_1, F11_2, F11_3, F12_1, F12_2, F12_3, F12_4, F12_5, F12_6, F12_7, F13_1, F14_1, F14_2, F14_3, F14_4, F14_5, F14_6, F15_1, F15_2, F15_3, F15_4, F15_5, F16_1, F16_2, F16_3, F16_4, F16_5, F16_6, F17_1, F17_2, F17_3, F18_1, F18_2, F18_3, F19_1, F20_1, F21_1, F22_1, F23_1, F23_2, F23_3, F23_4, F24_1, F25_1, F25_2, F25_3, F25_4, F25_5, F26_1, F26_2, F26_3, F26_4, F26_5, F27_1, F27_2, F27_3, F28_1, F28_2, F28_3, F29_1, F29_2, F29_3, F29_4, F30_1, F30_2, F30_3, F30_4, F30_5, F31_1, F31_2, F31_3, F31_4, F32_1, F32_2, F32_3, F32_4, F32_5, F33_1, F33_2, F33_3, F33_4, F33_5, F33_6, F33_7, F33_8, F34_1, F34_2, F35_1, F35_2, F35_3, F35_4, F35_5, F36_1, F36_2, F37_1, F37_2, F37_3, F37_4, F37_5, F38_1, F38_2, F38_3, F38_4, F38_5, F39_1, F39_2, F39_3, F40_1, F40_2, F40_3, F40_4, F40_5, F41_1, F41_2, F41_3, F41_4, F41_5, F42_1, F42_2, F42_3, F43_1, F43_2, F43_3, F44_1, F44_2, F44_3, F44_4, F45_1, F45_2, F45_3, F45_4, F46_1, F46_2, F46_3, F46_4, F46_5, F47_1, F47_2, F47_3, F47_4, F47_5, F48_1, F48_2, F48_3, F48_4, F49_1, F49_2, F50_1, F50_2, F50_3, F50_4, F50_5, F51_1, F51_2, F51_3, F51_4, F52_1, F52_2, F52_3, F52_4, F52_5, F53_1, F53_2, F54_1, F55_1, F55_2, F55_3, F55_4, F55_5, F55_6, F56_1, F56_2, F56_3, F57_1, F57_2, F57_3, F57_4, F58_1, F58_2, F58_3, F58_4, F59_1, F59_2, F59_3, F59_4, F59_5, F59_6, F60_1, F60_2, F60_3, F60_4, F61_1, F62_1, F63_1, F63_2, F63_3, F63_4, F63_5, F63_6, F63_7, F63_8, F64_1, F64_2, F64_3, F65_1, F65_2, F65_3, F65_4, F66_1, F66_2, F66_3, F66_4, F66_5, F67_1, F67_2, F67_3, F67_4, F68_1, F68_2, F68_3, F68_4, F69_1, F69_2, F69_3, F69_4, F69_5, F69_6, F70_1";
+        public static readonly string S_COLUMNS = "SiteID, DFSID, S5_1, S5_2, S5_3, S5_4, S5_5, S5_6, S5_7, S5_8, S6_1, S6_2, S6_3, S6_4, S6_5, S6_6, S6_7, S6_8, S6_9, S7_1, S7_2, S7_3, S7_4, S7_5, S7_6, S7_7, S8_1, S8_2, S8_3, S8_4, S8_5, S8_6, S8_7, S8_8, S8_9, S8_10, S8_11, S8_12, S9_1, S9_2, S9_3, S9_4, S9_5, S9_6, S9_7, S9_8, S9_9, S9_10, S9_11, S9_12";
 
         public short CP_COLUMN = 1;
         public Dictionary<string, short> CP_ROW = new Dictionary<string, short>
@@ -393,69 +395,69 @@ namespace VegsysManager.Classes
         public short S_COLUMN_START = 7;
         public Dictionary<string, short> S_ROW = new Dictionary<string, short>
         {
-            { "SiteID", 2 },
+            { "SiteID", 1 },
 
             { "S5_1", 4 },
             { "S5_2", 5 },
             { "S5_3", 6 },
             { "S5_4", 7 },
 
-            { "S5_5", 11 },
-            { "S5_6", 12 },
-            { "S5_7", 14 },
-            { "S5_8", 15 },
+            { "S5_5", 10 },
+            { "S5_6", 11 },
+            { "S5_7", 13 },
+            { "S5_8", 14 },
             
 
-            { "S6_1", 20 },
-            { "S6_2", 21 },
-            { "S6_3", 22 },
-            { "S6_4", 23 },
-            { "S6_5", 24 },
-            { "S6_6", 25 },
+            { "S6_1", 19 },
+            { "S6_2", 20 },
+            { "S6_3", 21 },
+            { "S6_4", 22 },
+            { "S6_5", 23 },
+            { "S6_6", 24 },
 
-            { "S6_7", 28 },
-            { "S6_8", 29 },
-            { "S6_9", 30 },
-
-
-            { "S7_1", 35 },
-            { "S7_2", 36 },
-            { "S7_3", 37 },
-            { "S7_4", 38 },
-
-            { "S7_5", 41 },
-            { "S7_6", 42 },
-            { "S7_7", 43 },
+            { "S6_7", 27 },
+            { "S6_8", 28 },
+            { "S6_9", 29 },
 
 
-            { "S8_1", 48 },
-            { "S8_2", 49 },
-            { "S8_3", 50 },
-            { "S8_4", 51 },
-            { "S8_5", 52 },
-            { "S8_6", 53 },
-            { "S8_7", 54 },
-            { "S8_8", 55 },
+            { "S7_1", 34 },
+            { "S7_2", 35 },
+            { "S7_3", 36 },
+            { "S7_4", 37 },
 
-            { "S8_9", 58 },
-            { "S8_10", 59 },
-            { "S8_11", 60 },
-            { "S8_12", 61 },
+            { "S7_5", 40 },
+            { "S7_6", 41 },
+            { "S7_7", 42 },
 
 
-            { "S9_1", 66 },
-            { "S9_2", 67 },
-            { "S9_3", 68 },
-            { "S9_4", 69 },
-            { "S9_5", 70 },
-            { "S9_6", 71 },
-            { "S9_7", 72 },
-            { "S9_8", 73 },
+            { "S8_1", 47 },
+            { "S8_2", 48 },
+            { "S8_3", 49 },
+            { "S8_4", 50 },
+            { "S8_5", 51 },
+            { "S8_6", 52 },
+            { "S8_7", 53 },
+            { "S8_8", 54 },
 
-            { "S9_9", 76 },
-            { "S9_10", 77 },
-            { "S9_11", 78 },
-            { "S9_12", 79 },
+            { "S8_9", 57 },
+            { "S8_10", 58 },
+            { "S8_11", 59 },
+            { "S8_12", 60 },
+
+
+            { "S9_1", 65 },
+            { "S9_2", 66 },
+            { "S9_3", 67 },
+            { "S9_4", 68 },
+            { "S9_5", 69 },
+            { "S9_6", 70 },
+            { "S9_7", 71 },
+            { "S9_8", 72 },
+
+            { "S9_9", 75 },
+            { "S9_10", 76 },
+            { "S9_11", 77 },
+            { "S9_12", 78 },
         };
     }
 }

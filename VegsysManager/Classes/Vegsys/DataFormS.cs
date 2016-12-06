@@ -48,6 +48,7 @@ namespace VegsysManager.Classes.Vegsys
         public byte? S5_8 { get; set; }     //Flashiness or muting
 
 
+
         // In the last column, place a check mark next to any item -- occurring in either the wetland or its CA -- that is 
         // likely to have accelerated the inputs of contaminants or salts to the AA.  [NRv, PRv, STR]			
         public bool? S6_1 { get; set; }     //stormwater or wastewater effluent (including failing septic systems), landfills, industrial facilities			
@@ -66,6 +67,7 @@ namespace VegsysManager.Classes.Vegsys
         public byte? S6_9 { get; set; }     //AA proximity to main sources(actual or potential)
 
 
+
         // In the last column, place a check mark next to any item -- occurring in either the wetland or its CA -- that is 
         // likely to have accelerated the inputs of nutrients to the wetland.  [STR]			
         public bool? S7_1 { get; set; }     //less than 1%, or <0.01 hectare (about 10 m on a side) never has surface water.  In other words, all or nearly all of the AA is inundated permanently or at least seasonally.
@@ -80,6 +82,7 @@ namespace VegsysManager.Classes.Vegsys
         public byte? S7_5 { get; set; }     //Type of loading
         public byte? S7_6 { get; set; }     //Frequency & duration of input
         public byte? S7_7 { get; set; }     //AA proximity to main sources(actual or potential)
+
 
 
         // In the last column, place a check mark next to any item present in the CA that is likely to have elevated the load 
@@ -101,6 +104,7 @@ namespace VegsysManager.Classes.Vegsys
         public byte? S8_10 { get; set; }    //Recentness of significant soil disturbance in the CA
         public byte? S8_11 { get; set; }    //Duration of sediment inputs to the wetland
         public byte? S8_12 { get; set; }    //AA proximity to actual or potential sources
+
 
 
         // In the last column, place a check mark next to any item present in the wetland that is likely to have compacted, eroded, 

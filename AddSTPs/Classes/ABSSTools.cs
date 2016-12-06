@@ -30,7 +30,7 @@ namespace ABSSTools
             }
             
         }
-        public static string[] ExctractSheetNames(string path)
+        public static string[] ExtractSheetNames(string path)
         {
             using (FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read))
             {
