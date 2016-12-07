@@ -1,18 +1,12 @@
-﻿using ABSSTools;
-using ABUtils;
-using Microsoft.Win32;
+﻿using ABUtils;
 using Microsoft.Windows.Controls.Ribbon;
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace ArchyManager
@@ -20,323 +14,27 @@ namespace ArchyManager
 
     public partial class ArchyMain : SecuredWindow
     {
-        public const string AEON_CONN_STRING = "Data Source=sqlprod3\\sql2008;Initial Catalog=Archy2014;User Id=developer;Password=sp1d3r5!;";
-        private SqlConnection dbConn;
-        private SqlCommand dbcommand;
-        private string SQL;
+        
         
         public ArchyMain()
-        {
-            InitializeComponent();
+            : base 
+            (
 #if DEBUG
-            @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\BC1235Tools\PDFToExcel\bin\Debug\PDFToData.exe", //fixed folder location
+            @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\MobileDataUtility\ArchyManager\bin\Debug\ArchyManager.exe", //fixed folder location
                     "31-DEC-2016"  //expiry date
 #elif FINAL
-                  @"\\CD1002-F03\GEOMATICS\Utilities\GIS\PDFToData.exe", //fixed folder location
+                  @"\\CD1002-F03\GEOMATICS\Utilities\Mobile\Data\Access\AEON\ArchyManager.exe", //fixed folder location
                     "31-DEC-2016"  //expiry date
 #elif RELEASE
-                  @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\BC1235Tools\PDFToExcel\bin\Release\PDFToData.exe", //fixed folder location
+                  @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\MobileDataUtility\ArchyManager\bin\Release\ArchyManager.exe", //fixed folder location
                     "31-DEC-2016"  //expiry date
 #endif
-        }
-
-        private ShovelTestPit[] ReadSTPs(DataSet dataset)
+            )
         {
-            char[] invalidchars = new char[] { ' ', '_', '-' };
-
-            List<ShovelTestPit> stplist = new List<ShovelTestPit>();
-            string[] headers = dataset.Tables[0].Rows[0].ItemArray.Where(x => x != DBNull.Value).Cast<string>().ToArray();
-            
-            for (int i = 1; i < dataset.Tables[0].Rows.Count; i++)
-            {
-                ShovelTestPit stp = new ShovelTestPit();
-                Type targetType = typeof(Object);
-                Type sourceType = typeof(Object);
-                Type stpType = typeof(ShovelTestPit);
-                object value = null;
-
-                for (int j = 0; j < headers.Length; j++)
-                {
-                    value = dataset.Tables[0].Rows[i].ItemArray[j];
-                    sourceType = value.GetType();
-                    try
-                    {
-                        targetType = stp.GetType().GetProperty(headers[j]).PropertyType;
-                        stpType.GetProperty(headers[j]).SetValue(stp, value);
-                    }
-                    catch (ArgumentException e) // cannot convert guid or number value
-                    {
-                        if (targetType == typeof(Int16?) || targetType == typeof(Int16))
-                        {
-                            Int16 int16value = Convert.ToInt16(value);
-                            stpType.GetProperty(headers[j]).SetValue(stp, int16value);
-                        }
-                        else if (targetType == typeof(string))
-                        {
-                            stpType.GetProperty(headers[j]).SetValue(stp, value.ToString());
-                        }
-                        else if (targetType == typeof(Guid))
-                        {
-                            string guidstr = value.ToString();
-                            Guid guid;
-                            if (Guid.TryParse(guidstr, out guid))
-                            {
-                                stpType.GetProperty(headers[j]).SetValue(stp, guid);
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show(string.Format("{0} ==> {1}: {2}", sourceType, targetType, e.Message), 
-                                "Data Conversion Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                        
-                    }
-                    catch (NullReferenceException) // header does not match property in ShovelTest Pit
-                    {
-                        MessageBox.Show(string.Format("Property {0} doesn't exist in ShovelTestPit", headers[j]),
-                                "Header Typo", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    catch (Exception e)
-                    {
-                        MessageBox.Show(e.Data.ToString(),
-                                "Unknown Conversion Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                stplist.Add(stp);
-            }
-            Console.WriteLine(string.Format("'{0}'",string.Join("','",stplist.Select(x => x.PitID))));
-            return stplist.ToArray();
-
-
-        }
-        private void browsefile_btn_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            ShovelTestPit[] stps = null;
-
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Excel Files|*.xls;*.xlsx";
-            if (openFileDialog.ShowDialog() == true)
-            {
-                DataTableCollection data = ExcelReader.Read(openFileDialog.FileName);
-                if (data != null)
-                {
-                    stps = ReadSTPs(data[0].DataSet);
-                }
-            }
-
-            if (stps != null)
-            {
-                //would put this all in one function that took and returned stps
-                ArchSite[] archsites = QueryArchSites(stps.Select(x => x.SiteNumber));
-                Datum[] datums = QueryDatums(stps.Select(x => x.DatumID));
-
-
-                
-                for (int i = 0; i < stps.Length; i++)
-                {
-                    ArchSite archsite = archsites.Where(x => x.SiteNumber == stps[i].SiteNumber).FirstOrDefault();
-                    if (archsite == null)
-                    {
-                        stps[i].ArchSiteGuid = Guid.Empty;
-                        MessageBox.Show(string.Format("Datum {0} not found.", stps[i].DatumID),
-                            "Archsite not found", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        continue;
-                    }
-                    stps[i].ArchSiteGuid = archsite.ArchSiteGuid;
-                    stps[i].ProjectID = archsite.ProjectID;
-                    if (string.IsNullOrWhiteSpace(stps[i].PermitNumber))
-                    {
-                        stps[i].PermitID = archsite.PermitID;
-                    }
-
-                    Datum datum = datums.Where(x => x.DatumID == stps[i].DatumID && x.ArchSiteGuid == stps[i].ArchSiteGuid).FirstOrDefault();
-                    if (datum == null)
-                    {
-                        stps[i].DatumGuid = Guid.Empty;
-                        MessageBox.Show(string.Format("Datum {0} not found.", stps[i].DatumID),
-                            "Datum not found", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        continue;
-                    }
-                    stps[i].DatumGuid = datum.DatumGuid;
-                    
-                    if (!stps[i].DatumBearing1.HasValue || !stps[i].DatumDistance1.HasValue || !datum.Easting.HasValue || !datum.Northing.HasValue )
-                    {
-                        MessageBox.Show(string.Format("Unable to calculate coordinates for {0}", stps[i].PitID), 
-                            "Missing Data", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        continue;
-                    }
-                    double bearing = stps[i].DatumBearing1 ?? 0;
-                    double distance = stps[i].DatumDistance1 ?? 0;
-                    double easting = datum.Easting ?? 0;
-                    double northing = datum.Northing ?? 0;
-                    stps[i].Easting = easting + (distance * Math.Sin(rad(90 - bearing)));
-                    stps[i].Northing = northing + (distance * Math.Cos(rad(90 - bearing)));
-
-                    if (!datum.UTMZone.HasValue)
-                    {
-                        MessageBox.Show(string.Format("Unable to calculate latitude and Longitude for {0}", stps[i].PitID),
-                            "No UTMZone Specified", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                    else
-                    {
-                        double longitude = 0;
-                        double latitude = 0;
-                        LatLongCalc.UTMtoLL(northing, easting, (int?)datum.UTMZone ?? 0, ref longitude, ref latitude);
-                        stps[i].Longitude = longitude;
-                        stps[i].Latitude = latitude;
-                        stps[i].UTMZone = datum.UTMZone;
-                    }
-                }
-
-
-
-                foreach (ShovelTestPit stp in stps.Where(x => x.ArchSiteGuid != Guid.Empty && x.DatumGuid != Guid.Empty))
-                {
-                    SaveToDatabase(stp);
-                }
-            }
+            InitializeComponent();
         }
 
-
-        private Datum[] QueryDatums(IEnumerable<string> datumids)
-        {
-            StringBuilder commandSB = new StringBuilder();
-            commandSB.AppendLine("SELECT DatumID, Easting, Northing, UTMZone, DatumGuid, ArchSiteGuid")
-                    .AppendLine("FROM [Archy2014].[dbo].[Datum]")
-                    .AppendLine(string.Format("WHERE DatumID IN ('{0}')", 
-                                    string.Join("','", datumids.Distinct())));
-
-            OpenConnection();
-            dbcommand.CommandType = CommandType.Text;
-            dbcommand.CommandText = commandSB.ToString();
-            SqlDataReader rdr = dbcommand.ExecuteReader();
-
-            List<Datum> datumlist = new List<Datum>();
-            while (rdr.Read())
-            {
-                Datum datum = new Datum
-                {
-                    DatumID = rdr.SafeGetString("DatumID"),
-                    DatumGuid = rdr.SafeGetGuid("DatumGuid"),
-                    Easting = rdr.GetDouble(rdr.GetOrdinal("Easting")),
-                    Northing = rdr.GetDouble(rdr.GetOrdinal("Northing")),
-                    UTMZone = rdr.GetByte(rdr.GetOrdinal("UTMZone")),
-                    ArchSiteGuid = rdr.SafeGetGuid("ArchSiteGuid")
-                };
-                datumlist.Add(datum);
-            }
-            
-            CloseConnection();
-
-            return datumlist.ToArray();
-        }
-        private ArchSite[] QueryArchSites(IEnumerable<string> sitenumbers)
-        {
-            StringBuilder commandSB = new StringBuilder();
-            commandSB.AppendLine("SELECT ArchSiteGuid, ProjectID, PermitID, SiteNumber")
-                    .AppendLine("FROM [Archy2014].[dbo].[ArchSite]")
-                    .AppendLine(string.Format("WHERE SiteNumber IN ('{0}')", string.Join("','", sitenumbers.Distinct())));
-
-            OpenConnection();
-            dbcommand.CommandType = CommandType.Text;
-            dbcommand.CommandText = commandSB.ToString();
-            SqlDataReader rdr = dbcommand.ExecuteReader();
-
-            List<ArchSite> ialist = new List<ArchSite>();
-            while (rdr.Read())
-            {
-                ArchSite archsite = new ArchSite
-                {
-                    ArchSiteGuid = rdr.SafeGetGuid("ArchSiteGuid"),
-                    ProjectID = rdr.SafeGetInt16("ProjectID"),
-                    PermitID = rdr.SafeGetInt32("PermitID"),
-                    SiteNumber = rdr.SafeGetString("SiteNumber")
-                };
-                ialist.Add(archsite);
-            }
-
-            CloseConnection();
-
-            return ialist.ToArray();
-        }
-
-        public void SaveToDatabase(ShovelTestPit stp)
-        {
-            AddParametersFrom<ShovelTestPit>(stp, dbcommand);
-
-            OpenConnection();
-
-            dbcommand.CommandType = CommandType.StoredProcedure;
-            dbcommand.CommandText = "V_SP_AddShovelTestPit";
-
-            try
-            {
-                dbcommand.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message + "\n" + e.InnerException,
-                            "Stored Procedure Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
-
-            CloseConnection();
-        }
-
-        public static void AddParametersFrom<T>(T obj, SqlCommand dbcommand)
-        {
-            List<SqlParameter> parameters = new List<SqlParameter>();
-            Type t = obj.GetType();
-            PropertyInfo[] properties = t.GetProperties(
-                BindingFlags.Public | // Also include public properties
-                BindingFlags.Instance // Specify to retrieve non static properties
-            );
-
-            foreach (PropertyInfo property in properties)
-            {
-                object value = t.GetProperty(property.Name).GetValue(obj);
-                if (value == null) value = DBNull.Value;
-                string parameterName = string.Format("@{0}", property.Name);
-                
-                if (dbcommand.Parameters.Contains(parameterName))
-                {
-                    dbcommand.Parameters[parameterName].Value = value;
-                }
-                else
-                {
-                    dbcommand.Parameters.Add(new SqlParameter(parameterName, value));
-                }
-            }
-        }
-
-        private void Connect()
-        {
-            try
-            {
-                dbConn = new SqlConnection(AEON_CONN_STRING);
-                dbcommand = new SqlCommand();
-                dbcommand.Connection = dbConn;
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Data.ToString(),
-                    "Database Connection Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        public bool OpenConnection()
-        {
-            dbConn.Open();
-            return dbConn.State == ConnectionState.Open;
-        }
-        public bool CloseConnection()
-        {
-            dbConn.Close();
-            return dbConn.State == ConnectionState.Closed;
-        }
-        private static double rad(double degrees)
-        {
-            return Math.PI * degrees / 180;
-        }
+        
 
 
 #region Ribbon
@@ -381,87 +79,15 @@ namespace ArchyManager
             Console.WriteLine(msg);
         }
 
-        private void openSDF_btn_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
+        
 
         private void exit_btn_Click(object sender, RoutedEventArgs e)
         {
-
+            Application.Current.Shutdown();
         }
     }
 
-    public class ShovelTestPit
-    {
-        public Guid ArchSiteGuid { get; set; }
-        public string SiteNumber { get; set; }
-        public string DatumID { get; set; }
-        public Guid DatumGuid { get; set; }
-        public string ProjectNumber { get; set; }
-        public int? ProjectID { get; set; }
-        public int? PermitID { get; set; }
-        public string PermitNumber { get; set; }
-        public DateTime SurveyDate { get; set; }
-        public string PitID { get; set; } // need to ensure does not already exist...
-        public string PitTool { get; set; } // need to ensure specified pittool exists
-        public double? DatumDistance1 { get; set; }
-        public double? DatumBearing1 { get; set; }
-        public string DatumDirection1 { get; set; } // calculated
-        public string STPNote { get; set; }
-        public double? Longitude { get; set; } // calculated
-        public double? Latitude { get; set; } // calculated
-        public double? Easting { get; set; } // calculated
-        public double? Northing { get; set; } // calculated
-        public double? Elevation { get; set; }
-        public byte? UTMZone { get; set; } // lookup if null
-        
 
-        // user also might add...
-        public double? DatumDistance2 { get; set; }
-        public double? DatumBearing2 { get; set; }
-        public string DatumDirection2 { get; set; }
-        public string Recorder { get; set; }
-        public string Excavator { get; set; }
-        public string PhotoFrom { get; set; }
-        public string PhotoTo { get; set; }
-        public string CameraNumber { get; set; }
-        public string ArtefactsCollected { get; set; }
-        public int? ArtefactCount { get; set; }
-        public bool StruckWater { get; set; }
-
-
-        // unlikely used
-        public double? HDOP { get; set; }
-        public double? PDOP { get; set; }
-        public double? VDOP { get; set; }
-        public byte? SatelliteCount { get; set; }
-        public string SatelliteFix { get; set; }
-        public int? PolygonID { get; set; }
-
-        //public Guid STPGuid { get; set; }
-        //public Guid DatumGuid { get; set; }    
-}
-
-    public class Datum
-    {
-        public string DatumID { get; set; }
-        public double? Easting { get; set; }
-        public double? Northing { get; set; }
-        public double? Longitude { get; set; }
-        public double? Latitude { get; set; }
-        public byte? UTMZone { get; set; }
-        public Guid DatumGuid { get; set; }
-        public Guid ArchSiteGuid { get; set; }
-    }
-
-    public class ArchSite
-    {
-        public Guid ArchSiteGuid { get; set; }
-        public string SiteNumber { get; set; }
-        public int? ProjectID { get; set; }
-        public int? PermitID { get; set; }
-    }
 
     public static class ExtensionMethods
     {
