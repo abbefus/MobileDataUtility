@@ -19,6 +19,13 @@ namespace ArchyManager
         private SqlCommand dbcommand;
         private string SQL;
 
+        private void openSTP_btn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+
+
         private ShovelTestPit2[] ReadSTPs(DataSet dataset)
         {
             char[] invalidchars = new char[] { ' ', '_', '-' };
@@ -241,25 +248,25 @@ namespace ArchyManager
 
         public void SaveToDatabase(ShovelTestPit2 stp)
         {
-            SqlUtils.AddParametersFrom(stp, ref dbcommand);
+            //SqlUtils.AddParametersFrom(stp, dbcommand);
 
-            OpenConnection();
+            //OpenConnection();
 
-            dbcommand.CommandType = CommandType.StoredProcedure;
-            dbcommand.CommandText = "V_SP_AddShovelTestPit";
+            //dbcommand.CommandType = CommandType.StoredProcedure;
+            //dbcommand.CommandText = "V_SP_AddShovelTestPit";
 
-            try
-            {
-                dbcommand.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message + "\n" + e.InnerException,
-                            "Stored Procedure Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            //try
+            //{
+            //    dbcommand.ExecuteNonQuery();
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show(e.Message + "\n" + e.InnerException,
+            //                "Stored Procedure Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+            //}
 
 
-            CloseConnection();
+            //CloseConnection();
         }
 
         private void Connect()

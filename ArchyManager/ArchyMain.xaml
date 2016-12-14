@@ -8,24 +8,30 @@
         xmlns:r="http://schemas.microsoft.com/winfx/2006/xaml/presentation/ribbon"
         mc:Ignorable="d"
         Icon="Images\Fatcow-Farm-Fresh-Multitool.ico"
-        Title="MainWindow" Height="350" Width="525">
+        Title="ArchyManager" Height="800" Width="1200"
+        WindowState="Maximized"
+        MinHeight="600" MinWidth="800">
     <Window.Resources>
         <src:WindowPositionConverter x:Key="WindowPosition" />
+        <src:DoubleToVisibilityConverter x:Key="Double2Vis" />
         <Style x:Key="hdrstyle" TargetType="DataGridColumnHeader">
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Width" Value="Auto" />
         </Style>
     </Window.Resources>
     <Grid>
+        <Frame x:Name="frame" Background="#FFD2D6D8" Margin="0,115,0,30" NavigationUIVisibility="Hidden"></Frame>
         <DockPanel x:Name="statusBar" Width="Auto" Height="30" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Background="White"  >
             <Border BorderBrush="#DDD" BorderThickness="2" DockPanel.Dock="Top">
-                <DockPanel HorizontalAlignment="Left">
+                <DockPanel LastChildFill="False" HorizontalAlignment="Stretch">
                     <TextBlock x:Name="status_tb" Width="Auto" MaxWidth="1000" DockPanel.Dock="Left" FontFamily="Courier New"
                             VerticalAlignment="Center" FontSize="15" Margin="5,0,0,0"></TextBlock>
+                    <ProgressBar x:Name="progressbar" Height="26" VerticalAlignment="Center" DockPanel.Dock="Right" Width="600" Margin="0,0,5,0"
+                                 Visibility="{Binding ElementName=progressbar, Path=Value, Converter={StaticResource Double2Vis}}"/>
                 </DockPanel>
             </Border>
         </DockPanel>
-        <r:Ribbon x:Name="veg_rbn" VerticalAlignment="Top" Loaded="ribbon_Loaded" ContextMenu="{x:Null}">
+        <r:Ribbon x:Name="archy_rbn" VerticalAlignment="Top" Loaded="ribbon_Loaded" ContextMenu="{x:Null}" SelectionChanged="Ribbon_SelectionChanged">
             <r:Ribbon.ApplicationMenu>
                 <r:RibbonApplicationMenu Loaded="RibbonApplicationMenu_Loaded">
                     <r:RibbonApplicationMenu.Resources>
@@ -51,33 +57,21 @@
                     <r:RibbonApplicationMenuItem x:Name="exit_btn" Header="Exit Program" ImageSource="Images/cross-icon.png" Click="exit_btn_Click" />
                 </r:RibbonApplicationMenu>
             </r:Ribbon.ApplicationMenu>
-            <r:RibbonTab Header="Archy" x:Name="vegsys_tab" ContextMenu="{x:Null}">
+            <r:RibbonTab Header="Field Data" x:Name="field_tab" ContextMenu="{x:Null}">
                 <r:RibbonGroup x:Name="sdf_rg" Header="SDF Management" ContextMenu="{x:Null}">
                     <r:RibbonButton x:Name="openSDF_btn" Label="Open SDF" LargeImageSource="Images/database-yellow-sdf-icon.png" ContextMenu="{x:Null}"
                                     Click="openSDF_btn_Click"/>
+                    <r:RibbonButton x:Name="uploadSDF_btn" Label="Upload SDF" LargeImageSource="Images/database-yellow-sdf-upload-icon.png" ContextMenu="{x:Null}"
+                                    Click="uploadSDF_btn_Click" IsEnabled="False"/>
+                </r:RibbonGroup>
+                <r:RibbonGroup x:Name="excel_rg" Header="Excel Data" ContextMenu="{x:Null}">
+                    <r:RibbonButton x:Name="openSTP_btn" Label="Open SDF" LargeImageSource="Images/page-white-excel-shovel-icon.png" ContextMenu="{x:Null}"
+                                    Click="openSTP_btn_Click"/>
                 </r:RibbonGroup>
             </r:RibbonTab>
+            <r:RibbonTab Header="Reporting" x:Name="report_tab" ContextMenu="{x:Null}">
+                
+            </r:RibbonTab>
         </r:Ribbon>
-
-        <!--<Image x:Name="browsefile_btn" Source="Images\folder-explore-icon.png" IsHitTestVisible="True" 
-                                Cursor="Hand" Width="32" Height="32"
-                                Margin="10" MouseDown="browsefile_btn_MouseDown">
-            <Image.RenderTransformOrigin>
-                <Point X="0.5" Y="0.5"/>
-            </Image.RenderTransformOrigin>
-            <Image.Style>
-                <Style TargetType="Image">
-                    <Style.Triggers>
-                        <Trigger Property="Image.IsMouseOver" Value="True">
-                            <Setter Property="Image.RenderTransform">
-                                <Setter.Value>
-                                    <ScaleTransform ScaleX="1.2" ScaleY="1.2" />
-                                </Setter.Value>
-                            </Setter>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Image.Style>
-        </Image>-->
     </Grid>
 </src:SecuredWindow>

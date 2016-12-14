@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
+using ConvertX = System.Convert;
 
 namespace ABUtils
 {
@@ -21,6 +23,18 @@ namespace ABUtils
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return (int)value > 0;
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return true;
+        }
+    } // for testing bindings
+    public class DoubleToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool isnotzero = ConvertX.ToDouble(value) > 0;
+            return isnotzero ? Visibility.Visible : Visibility.Hidden;
         }
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

@@ -1,14 +1,21 @@
-﻿using System;
+﻿using ArchyManager.Pages;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ArchyManager.Classes.Archy2014
 {
-    class Project
+    class Project : IUploadable
     {
-        public Int16? ProjectID { get; set; }
+        [Browsable(false)]
+        public string DefaultGuid { get { return "ProjectGuid"; } }
+        [Browsable(false)]
+        public bool IsUploaded { get; set; }
+
+        public Int16 ProjectID { get; set; }
         public string ProjectName { get; set; }
         public string ProjectTitle { get; set; }
         public Guid ProjectGuid { get; set; }

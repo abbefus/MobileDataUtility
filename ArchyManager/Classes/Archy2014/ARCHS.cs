@@ -1,12 +1,19 @@
-﻿using System;
+﻿using ArchyManager.Pages;
+using System;
+using System.ComponentModel;
 
 namespace ArchyManager.Classes.Archy2014
 {
-    class ARCHS
+    class ARCHS : IUploadable
     {
-        public Int16? ProjectID { get; set; }
-        public Int32? PermitID { get; set; }
-        public DateTime? SurveyDate { get; set; }
+        [Browsable(false)]
+        public string DefaultGuid { get { return "ARCHSGuid"; } }
+        [Browsable(false)]
+        public bool IsUploaded { get; set; }
+
+        public Int16 ProjectID { get; set; }
+        public Int32 PermitID { get; set; }
+        public DateTime SurveyDate { get; set; }
         public float? Longitude { get; set; }
         public float? Latitude { get; set; }
         public float? Easting { get; set; }

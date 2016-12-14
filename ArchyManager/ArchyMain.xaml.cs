@@ -1,12 +1,15 @@
 ﻿using ABUtils;
 using Microsoft.Windows.Controls.Ribbon;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 
 namespace ArchyManager
@@ -14,8 +17,18 @@ namespace ArchyManager
 
     public partial class ArchyMain : SecuredWindow
     {
+        private Dictionary<string, Page> activepages = new Dictionary<string, Page>();
+
+        [DllImport("user32.dll")]
+        static extern int GetWindowLong(IntPtr hwnd, int index);
+
+        [DllImport("user32.dll")]
+        static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
+
+        private const int GWL_STYLE = -16;
+        private const int WS_DISABLED = 0x08000000;
         
-        
+
         public ArchyMain()
             : base 
             (
@@ -32,16 +45,29 @@ namespace ArchyManager
             )
         {
             InitializeComponent();
+
+            foreach (RibbonTab tab in archy_rbn.Items)
+            {
+                activepages.Add(tab.Name, null);
+            }
         }
 
-        
+        private void SetNativeEnabled(bool enabled)
+        {
+            WindowInteropHelper helper = new WindowInteropHelper(this);
+            IntPtr hwnd = helper.Handle;
+            SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) &
+                ~WS_DISABLED | (enabled ? 0 : WS_DISABLED));
+        }
 
 
-#region Ribbon
+        #region Ribbon
 
-        // switches content in mainframe
+        // need to implement some way to take advantage of navigator 
         private void Ribbon_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            RibbonTab tab = archy_rbn.SelectedItem as RibbonTab;
+            frame.Navigate(activepages[tab.Name]);
         }
         private void ribbon_Loaded(object sender, RoutedEventArgs e)
         {
@@ -73,18 +99,22 @@ namespace ArchyManager
         }
         public void UpdateStatus(StatusType type, string msg)
         {
-            status_tb.Foreground = type == StatusType.Failure ?
+            Dispatcher.Invoke(() =>
+            {
+                status_tb.Foreground = type == StatusType.Failure ?
                 new SolidColorBrush(Colors.Red) :
-                new SolidColorBrush(Colors.Green);
-            Console.WriteLine(msg);
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#b84c00"));
+                Console.WriteLine(msg);
+            });
         }
 
-        
 
         private void exit_btn_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();
         }
+
+
     }
 
 

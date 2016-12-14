@@ -103,13 +103,23 @@
     <Compile Include="Classes\Archy2014\ARCHSPolygon.cs" />
     <Compile Include="Classes\Archy2014\Archy2014DB.cs" />
     <Compile Include="Classes\Archy2014\AreaGeometry.cs" />
+    <Compile Include="Classes\Archy2014\CMT.cs" />
+    <Compile Include="Classes\Archy2014\CMTMark.cs" />
+    <Compile Include="Classes\Archy2014\CrewDefinition.cs" />
+    <Compile Include="Classes\Archy2014\Datum.cs" />
+    <Compile Include="Classes\Archy2014\HSF.cs" />
+    <Compile Include="Classes\Archy2014\ProfileDescriptor.cs" />
     <Compile Include="Classes\Archy2014\Project.cs" />
     <Compile Include="Classes\Archy2014\ShovelTestPit.cs" />
+    <Compile Include="Classes\Archy2014\STPProfile.cs" />
+    <Compile Include="Classes\Archy2014\TestPitCrew.cs" />
+    <Compile Include="Classes\Archy2014\TrackLog.cs" />
+    <Compile Include="Classes\Archy2014\WCA.cs" />
     <Compile Include="Classes\Converters.cs" />
+    <Compile Include="Classes\DataGridBehavior.cs" />
     <Compile Include="Classes\LatLongCalc.cs" />
     <Compile Include="Classes\SqlCeUtils.cs" />
     <Compile Include="Classes\SqlUtils.cs" />
-    <Compile Include="Classes\UploadSDF.cs" />
     <Compile Include="ArchyMain.xaml.cs">
       <DependentUpon>ArchyMain.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -118,8 +128,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Pages\SDFDataPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Pages\SDFDataPage.xaml.cs">
+      <DependentUpon>SDFDataPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -137,6 +154,8 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -158,6 +177,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\cross-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\database-yellow-sdf-upload-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\page-white-excel-shovel-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

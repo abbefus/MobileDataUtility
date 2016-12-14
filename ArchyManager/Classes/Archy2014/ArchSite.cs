@@ -1,15 +1,22 @@
-﻿using System;
+﻿using ArchyManager.Pages;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ArchyManager.Classes.Archy2014
 {
-    class ArchSite
+    class ArchSite: IUploadable
     {
+        [Browsable(false)]
+        public string DefaultGuid { get { return "ArchSiteGuid"; } }
+        [Browsable(false)]
+        public bool IsUploaded { get; set; }
+
         public Guid ArchSiteGuid { get; set; }
-        public Int16? ProjectID { get; set; }
+        public Int16 ProjectID { get; set; }
         public Int32? PermitID { get; set; }
         public string Recorder { get; set; }
         public string TempNumber { get; set; }
