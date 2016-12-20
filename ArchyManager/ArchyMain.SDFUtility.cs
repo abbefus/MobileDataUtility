@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlServerCe;
@@ -35,7 +36,7 @@ namespace ArchyManager
                 Archy2014DB db = ReadSDF(openFileDialog.FileName);
                 if (db == null) return;
 
-                
+                activepages["field_tab"] = null;
                 activepages["field_tab"] = new SDFDataPage { DataContext = db };
                 frame.Navigate(activepages["field_tab"]);
 
@@ -320,8 +321,12 @@ namespace ArchyManager
                     {
                         PropertyInfo p = dffType.GetProperty(column);
 
-                        // ignore all properties that have an attribute
-                        if (p.GetCustomAttributes(false).Length == 1) continue;
+                        // properties unbrowsable properties
+                        BrowsableAttribute ba = p.GetCustomAttribute(typeof(BrowsableAttribute), false) as BrowsableAttribute;
+                        if (ba != null)
+                        {
+                            if (ba.Browsable == false) continue;
+                        }
 
                         p.SetValue
                         (

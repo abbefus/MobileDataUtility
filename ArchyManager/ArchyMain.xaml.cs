@@ -34,13 +34,13 @@ namespace ArchyManager
             (
 #if DEBUG
             @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\MobileDataUtility\ArchyManager\bin\Debug\ArchyManager.exe", //fixed folder location
-                    "31-DEC-2016"  //expiry date
+                    "31-JAN-2017"  //expiry date
 #elif FINAL
                   @"\\CD1002-F03\GEOMATICS\Utilities\Mobile\Data\Access\AEON\ArchyManager.exe", //fixed folder location
-                    "31-DEC-2016"  //expiry date
+                    "31-JAN-2017"  //expiry date
 #elif RELEASE
                   @"C:\Users\abefus\Documents\Visual Studio 2015\Projects\MobileDataUtility\ArchyManager\bin\Release\ArchyManager.exe", //fixed folder location
-                    "31-DEC-2016"  //expiry date
+                    "31-JAN-2017"  //expiry date
 #endif
             )
         {
@@ -114,7 +114,12 @@ namespace ArchyManager
             Application.Current.Shutdown();
         }
 
+        private void viewsWB_btn_Click(object sender, RoutedEventArgs e)
+        {
 
+        }
+
+        
     }
 
 

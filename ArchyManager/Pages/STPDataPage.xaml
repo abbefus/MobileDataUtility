@@ -1,0 +1,38 @@
+﻿<Page x:Class="ArchyManager.Pages.STPDataPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:ArchyManager.Pages"
+      xmlns:extension="clr-namespace:WpfControlLibrary.Extension"
+      mc:Ignorable="d" 
+      MinHeight="465" MinWidth="780"
+      VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+      Title="STPDataPage">
+    <Page.Resources>
+        <!--Control colors.-->
+        <Color x:Key="ControlLightColor">#FFffbf00</Color>
+        <Color x:Key="ControlMediumColor">#FFff960d</Color>
+        <Color x:Key="ControlDarkColor">#FFb84c00</Color>
+
+        <Color x:Key="ControlPressedColor">#FF7f0000</Color>
+
+        <!--Border colors-->
+        <Color x:Key="BorderLightColor">#FFCCCCCC</Color>
+        <Color x:Key="BorderMediumColor">#FFb84c00</Color>
+        <Color x:Key="BorderDarkColor">#FF444444</Color>
+
+        <Style TargetType="{x:Type DataGridRow}">
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{StaticResource ControlPressedColor}" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="White" />
+            </Style.Resources>
+        </Style>
+    </Page.Resources>
+    <Grid x:Name="grid">
+        <DataGrid x:Name="stp_dg" Margin="-6" HorizontalAlignment="Left" VerticalAlignment="Top" AutoGenerateColumns="True"
+                  extension:DataGridBehavior.UseBrowsableAttributeOnColumn="True" IsReadOnly="True" CanUserAddRows="False"
+                  ItemsSource="{Binding}" EnableColumnVirtualization="True" EnableRowVirtualization="True" />
+    </Grid>
+</Page>
+

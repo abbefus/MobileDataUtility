@@ -132,10 +132,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Pages\STPDataPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Dialogs.cs" />
     <Compile Include="Pages\SDFDataPage.xaml.cs">
       <DependentUpon>SDFDataPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\STPDataPage.xaml.cs">
+      <DependentUpon>STPDataPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -184,6 +192,19 @@
   <ItemGroup>
     <Resource Include="Images\page-white-excel-shovel-icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\export-excel-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\file-extension-xls-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\table-excel-shovel-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\data-sort-icon.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

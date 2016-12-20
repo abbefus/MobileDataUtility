@@ -4,13 +4,14 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
 
 namespace ArchyManager.Classes
 {
-    class SqlUtils
+    static class SqlUtils
     {
 
         //cmd.Parameters.Add("@NewId", SqlDbType.Int).Direction = ParameterDirection.Output;
@@ -28,7 +29,12 @@ namespace ArchyManager.Classes
 
             foreach (PropertyInfo property in properties)
             {
-                if (property.GetCustomAttributes(false).Length == 1) continue;
+                // this allows browseable flag to determine whether property is sent as a parameter
+                BrowsableAttribute ba = property.GetCustomAttribute(typeof(BrowsableAttribute), false) as BrowsableAttribute;
+                if (ba != null)
+                {
+                    if (ba.Browsable == false) continue;
+                }
 
                 object value = t.GetProperty(property.Name).GetValue(obj);
                 if (value == null) value = DBNull.Value;
@@ -55,7 +61,14 @@ namespace ArchyManager.Classes
             
             foreach (PropertyInfo property in properties)
             {
-                if (property.GetCustomAttributes(false).Length == 1) continue;
+                BrowsableAttribute ba = property.GetCustomAttribute(typeof(BrowsableAttribute), false) as BrowsableAttribute;
+                if (ba != null)
+                {
+                    if (ba.Browsable == false) continue;
+                }
+
+
+
                 object value = t.GetProperty(property.Name).GetValue(obj);
                 if (value == null) value = DBNull.Value;
                 string parameterName = string.Format("@{0}", property.Name);
@@ -79,7 +92,7 @@ namespace ArchyManager.Classes
                 AddParametersFrom(row, comm);
                 try
                 {
-                    comm.ExecuteNonQuery();
+                    //comm.ExecuteNonQuery();
                 }
                 catch (Exception e)
                 {
@@ -99,7 +112,7 @@ namespace ArchyManager.Classes
                 rv = AddParametersFrom(row, comm, outputType);
                 try
                 {
-                    comm.ExecuteNonQuery();
+                    //comm.ExecuteNonQuery();
                 }
                 catch (Exception e)
                 {
@@ -109,6 +122,42 @@ namespace ArchyManager.Classes
             }
             return rv;
         }
+
+
+        public static object ChangeType(object obj, Type type)
+        {
+            Type targetType = IsNullableType(type) ? Nullable.GetUnderlyingType(type) : type;
+            try
+            {
+                return Convert.ChangeType(obj, targetType);
+            }
+            catch
+            {
+                return Activator.CreateInstance(targetType);
+            }
+            
+        }
+        private static bool IsNullableType(Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
+        }
+
+        public static bool SetPropertyBrowsable(Type classtype, string columnname, bool browseable = true)
+        {
+            try
+            {
+                PropertyDescriptor pd = TypeDescriptor.GetProperties(classtype)[columnname];
+                if (pd.IsBrowsable == browseable) return true;
+                BrowsableAttribute att = pd.Attributes.Cast<Attribute>().Where(x => x.GetType() == typeof(BrowsableAttribute)).FirstOrDefault() as BrowsableAttribute;
+                FieldInfo fi = typeof(BrowsableAttribute).GetField("browsable", BindingFlags.Instance | BindingFlags.NonPublic);
+                fi.SetValue(att, browseable);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
     public class SPString
@@ -116,10 +165,10 @@ namespace ArchyManager.Classes
         private SPString(string value) { Value = value; }
         public string Value { get; set; }
         public static SPString INSERT { get { return new SPString("SP_Insert{0}"); } }
-        public static SPString UPDATE { get { return new SPString("SP_Update{0}"); } }
+        public static SPString ADDNEW { get { return new SPString("SP_AddNew{0}"); } }
     }
 
-    public class SQL2008
+    public static class SQL2008
     {
         public const string ARCHY2014_DB = "Archy2014";
         public const string ARCHYPROD_DB = "Archy_Prod";

@@ -47,13 +47,14 @@ namespace ABUtils
             stopClose = required;
             Owner = Application.Current.MainWindow;
             SourceInitialized += Window_SourceInitialized;
+            SizeToContent = SizeToContent.WidthAndHeight;
             Loaded += Window_Loaded;
             Closing += Window_Closing;
 
-            if (!ComponentDispatcher.IsThreadModal)
-            {
-                SetNativeEnabled(false);
-            }
+            //if (!ComponentDispatcher.IsThreadModal)
+            //{
+            //    SetNativeEnabled(false);
+            //}
         }
 
         private void Window_SourceInitialized(object sender, EventArgs e)
@@ -106,7 +107,7 @@ namespace ABUtils
         protected void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = stopClose;
-            if (!ComponentDispatcher.IsThreadModal) SetNativeEnabled(true);
+            //if (!ComponentDispatcher.IsThreadModal) SetNativeEnabled(true);
 
         }
 

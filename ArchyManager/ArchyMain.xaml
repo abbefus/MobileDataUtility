@@ -64,9 +64,15 @@
                     <r:RibbonButton x:Name="uploadSDF_btn" Label="Upload SDF" LargeImageSource="Images/database-yellow-sdf-upload-icon.png" ContextMenu="{x:Null}"
                                     Click="uploadSDF_btn_Click" IsEnabled="False"/>
                 </r:RibbonGroup>
-                <r:RibbonGroup x:Name="excel_rg" Header="Excel Data" ContextMenu="{x:Null}">
-                    <r:RibbonButton x:Name="openSTP_btn" Label="Open SDF" LargeImageSource="Images/page-white-excel-shovel-icon.png" ContextMenu="{x:Null}"
+                <r:RibbonGroup x:Name="excel_rg" Header="Upload" ContextMenu="{x:Null}">
+                    <r:RibbonButton x:Name="openSTP_btn" Label="Import STPs" LargeImageSource="Images/table-excel-shovel-icon.png" ContextMenu="{x:Null}"
                                     Click="openSTP_btn_Click"/>
+                    <r:RibbonButton x:Name="mapSTP_btn" Label="Map STP Columns" LargeImageSource="Images/data-sort-icon.png" ContextMenu="{x:Null}"
+                                    Click="mapSTP_btn_Click"/>
+                </r:RibbonGroup>
+                <r:RibbonGroup x:Name="report_rg" Header="Download" ContextMenu="{x:Null}">
+                    <r:RibbonButton x:Name="viewsWB_btn" Label="Get AEON Views" LargeImageSource="Images/export-excel-icon.png" ContextMenu="{x:Null}"
+                                    Click="viewsWB_btn_Click" />
                 </r:RibbonGroup>
             </r:RibbonTab>
             <r:RibbonTab Header="Reporting" x:Name="report_tab" ContextMenu="{x:Null}">
