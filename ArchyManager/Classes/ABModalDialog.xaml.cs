@@ -186,7 +186,7 @@ namespace ABUtils
             Grid.SetRow(ButtonDP, 1);
             grid.Children.Add(ButtonDP);
         }
-        private void Okbtn_Click(object sender, RoutedEventArgs e)
+        protected virtual void Okbtn_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
             Close();

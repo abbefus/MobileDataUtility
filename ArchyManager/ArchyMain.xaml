@@ -14,6 +14,7 @@
     <Window.Resources>
         <src:WindowPositionConverter x:Key="WindowPosition" />
         <src:DoubleToVisibilityConverter x:Key="Double2Vis" />
+        <local:IsSTPConverter x:Key="IsStpConverter" />
         <Style x:Key="hdrstyle" TargetType="DataGridColumnHeader">
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Width" Value="Auto" />
@@ -68,7 +69,7 @@
                     <r:RibbonButton x:Name="openSTP_btn" Label="Import STPs" LargeImageSource="Images/table-excel-shovel-icon.png" ContextMenu="{x:Null}"
                                     Click="openSTP_btn_Click"/>
                     <r:RibbonButton x:Name="mapSTP_btn" Label="Map STP Columns" LargeImageSource="Images/data-sort-icon.png" ContextMenu="{x:Null}"
-                                    Click="mapSTP_btn_Click"/>
+                                    Click="mapSTP_btn_Click" IsEnabled="{Binding ElementName=frame, Path=Content, Converter={StaticResource IsStpConverter}}"/>
                 </r:RibbonGroup>
                 <r:RibbonGroup x:Name="report_rg" Header="Download" ContextMenu="{x:Null}">
                     <r:RibbonButton x:Name="viewsWB_btn" Label="Get AEON Views" LargeImageSource="Images/export-excel-icon.png" ContextMenu="{x:Null}"

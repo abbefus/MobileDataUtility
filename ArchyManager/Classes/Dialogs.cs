@@ -1,14 +1,11 @@
 ﻿using ABUtils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,35 +13,37 @@ using System.Windows.Input;
 
 namespace ArchyManager.Dialogs
 {
+    // Important Note: requires BrowsableAttribute on all properties of dataType
     class MapColumnsDialog : OKCancelDialog
     {       
-
-        public MapColumnsDialog(Dictionary<string,string> currentMapping, Type dataType)
+        public MapColumnsDialog(Dictionary<string,string> currentMapping, Type dataType, string[] exceptions=null)
             : base (string.Format("Map Columns to {0}",dataType.Name))
         {
-            ViewModel vm = DictionaryToView(currentMapping, dataType);
+            ViewModel vm = DictionaryToView(currentMapping, dataType, exceptions);
             DataContext = vm;
             Initialize();
         }
 
         // creates a viewmodel from an existing mapping dictionary and a dataType
-        // Note: requires BrowsableAttribute on all properties of dataType
-        private ViewModel DictionaryToView(Dictionary<string,string> mapping, Type dataType)
+        private ViewModel DictionaryToView(Dictionary<string,string> mapping, Type dataType, string[] exceptions)
         {
             // filter by BrowsableAttribute
-            IEnumerable<string> properties = dataType.GetProperties()
+            PropertyInfo[] properties = dataType.GetProperties()
                 .Where(x => ((BrowsableAttribute)x.GetCustomAttribute(typeof(BrowsableAttribute))).Browsable)
-                .Select(x => x.Name);
+                .ToArray();
 
-            ViewModel vm = new ViewModel { Options = new ObservableCollection<string>(properties) };
+            ViewModel vm = new ViewModel { Options = new ObservableCollection<string>(properties.Select(x => x.Name).Where(x => !exceptions.Contains(x))) };
             vm.Options.Insert(0, "Unmapped");
 
             foreach (KeyValuePair<string,string> kvp in mapping)
             {
-                vm.Map.Add(new Mapping { Heading = kvp.Key, Selection = kvp.Value });
+                Type datatype = properties.Where(x => x.Name == kvp.Value).Select(x => x.PropertyType).FirstOrDefault();
+                vm.Map.Add(new Mapping { Heading = kvp.Key, Selection = kvp.Value, DataType = dataType.Name });
             }
             return vm;
         }
+
+        // returns a <string,string> dictionary of the mapping result
         public Dictionary<string,string> OMToDictionary()
         {
             Dictionary<string, string> output = new Dictionary<string, string>();
@@ -59,9 +58,10 @@ namespace ArchyManager.Dialogs
         private void Row_Click(object sender, MouseButtonEventArgs e)
         {
             DataGridRow row = sender as DataGridRow;
-            Console.WriteLine(((Mapping)row.Item).Heading);
+            Console.WriteLine(((Mapping)row.Item).Heading.ToUpperInvariant());
         }
 
+        // sets up datagrid and columns
         private void Initialize()
         {
             // capture mouse clicks on row
@@ -120,6 +120,24 @@ namespace ArchyManager.Dialogs
             stack_pnl.Children.Add(dg);
         }
 
+        // checks for duplicates before closing dialog
+        protected override void Okbtn_Click(object sender, RoutedEventArgs e)
+        {
+            string[] selections = ((ViewModel)DataContext).Map.Select(x => x.Selection).Where(x => x != "Unmapped").ToArray();
+            if (selections.Distinct().Count() == selections.Length)
+            {
+                Console.WriteLine("Mapping Complete.");
+                base.Okbtn_Click(sender, e);
+            }
+            else
+            {
+                string query = string.Join(" and ", selections.GroupBy(x => x).Where(g => g.Count() > 1).Select(g => g.Key));
+                MessageBox.Show(string.Format("You cannot map to a property more than once.\r\n{0} was selected more than once.", query),
+                    "Duplicate properties selected", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                e.Handled = true;
+            }
+        }
+
     }
 
     public class Mapping : ViewModelBase
@@ -174,7 +192,6 @@ namespace ArchyManager.Dialogs
             }
         }
     }
-
 
     public class DataConverter : IValueConverter
     {

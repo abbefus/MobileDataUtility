@@ -86,19 +86,19 @@ namespace ArchyManager.Classes.Archy2014
         [Browsable(true)]
         public double? DatumBearing2 { get; set; }
 
-        public virtual void SetBrowsableDefaults(string[] exclusions = null)
+        public static void SetBrowsableDefaults(string[] exclusions = null)
         {
             string[] fixedexclusions = new string[] { "DefaultGuid", "IsUploaded" };
             exclusions = exclusions != null ? exclusions.Concat(fixedexclusions).ToArray() : fixedexclusions;
-            foreach (PropertyInfo property in typeof(ShovelTestPitExtended).GetProperties())
+            foreach (PropertyInfo property in typeof(ShovelTestPit).GetProperties())
             {
                 if (exclusions.Contains(property.Name))
                 {
-                    SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), property.Name, false);
+                    SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPit), property.Name, false);
                 }
                 else
                 {
-                    SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), property.Name, true);
+                    SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPit), property.Name, true);
                 }
             }
         }
@@ -120,6 +120,23 @@ namespace ArchyManager.Classes.Archy2014
         //lookup
         //[Browsable(true)]
         //public string PitTool { get; set; }
+
+        new public static void SetBrowsableDefaults(string[] exclusions = null)
+        {
+            string[] fixedexclusions = new string[] { "DefaultGuid", "IsUploaded" };
+            exclusions = exclusions != null ? exclusions.Concat(fixedexclusions).ToArray() : fixedexclusions;
+            foreach (PropertyInfo property in typeof(ShovelTestPitExtended).GetProperties())
+            {
+                if (exclusions.Contains(property.Name))
+                {
+                    SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), property.Name, false);
+                }
+                else
+                {
+                    SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), property.Name, true);
+                }
+            }
+        }
 
         public ShovelTestPit ToShovelTestPit()
         {

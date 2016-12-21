@@ -35,20 +35,51 @@ namespace ArchyManager.Pages
         }
 
         // converts spreadsheet values into ShovelTextPitExtended
-        public void UpdateDataGridFromMapping()
+        public void UpdateDataGridFromMapping(string[] values = null)
         {
+            STPCollection.Clear();
+
+            values = values ?? ColumnMap.Values.Where(x => x != "Unmapped").ToArray();
             for (int i = 1; i < DataRows.Length; i++)
             {
                 ShovelTestPitExtended stp = new ShovelTestPitExtended();
-                foreach (string p in ColumnMap.Keys)
+                foreach (KeyValuePair<string,string> kvp in ColumnMap.Where(x => values.Contains(x.Value)))
                 {
-                    if (ColumnMap[p] == "Unmapped") continue;
-                    PropertyInfo pi = stp.GetType().GetProperty(ColumnMap[p]);
-                    pi.SetValue(stp, SqlUtils.ChangeType(DataRows[i][p], pi.PropertyType));
+                    PropertyInfo pi = stp.GetType().GetProperty(kvp.Value);
+
+                    object value;
+                    bool success = SqlUtils.TryChangeType(DataRows[i][kvp.Key], pi.PropertyType, out value);
+                    if (success)
+                    {
+                        pi.SetValue(stp, value);
+                    }
+                    else
+                    {
+                        pi.SetValue(stp,SqlUtils.ChangeType(AttemptLookups(pi, DataRows[i][kvp.Key]), pi.PropertyType));
+                    }
+                    
                 }
                 STPCollection.Add(stp);
             }
             RefreshDataGrid();
+        }
+        private object AttemptLookups(PropertyInfo pi, object value)
+        {
+            switch(pi.Name)
+            {
+                case "PermitNumber":
+                    return value;
+                case "PitToolID":
+                    return value;
+                case "DatumGUID":
+                    return value;
+                case "ProjectID":
+                    return value;
+                case "ArchSiteGUID":
+                    return value;
+                default:
+                    return value;
+            }
         }
         
 

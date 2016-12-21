@@ -137,6 +137,21 @@ namespace ArchyManager.Classes
             }
             
         }
+        public static bool TryChangeType<T>(object obj, Type type, out T value)
+        {
+            Type targetType = IsNullableType(type) ? Nullable.GetUnderlyingType(type) : type;
+            try
+            {
+                value = (T)Convert.ChangeType(obj, targetType);
+                return true;
+            }
+            catch
+            {
+                value = default(T);
+                return false;
+            }
+
+        }
         private static bool IsNullableType(Type type)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));

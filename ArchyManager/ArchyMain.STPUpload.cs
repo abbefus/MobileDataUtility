@@ -1,4 +1,5 @@
 ﻿using ABSSTools;
+using ABUtils;
 using ArchyManager.Classes;
 using ArchyManager.Classes.Archy2014;
 using ArchyManager.Dialogs;
@@ -15,6 +16,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace ArchyManager
@@ -22,6 +24,22 @@ namespace ArchyManager
     public partial class ArchyMain
     {
         
+        private IEnumerable<string> HideUnhideColumns(IEnumerable<string> headers, Type classType)
+        {
+            foreach (PropertyInfo property in classType.GetProperties())
+            {
+                if (headers.Contains(property.Name))
+                {
+                    SqlUtils.SetPropertyBrowsable(classType, property.Name, true);
+                    yield return property.Name;
+                }
+                else
+                {
+                    SqlUtils.SetPropertyBrowsable(classType, property.Name, false);
+                }
+            }
+        }
+
         private void openSTP_btn_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -31,37 +49,45 @@ namespace ArchyManager
                 DataTableCollection data = ExcelReader.Read(openFileDialog.FileName);
                 if (data != null)
                 {
-                    STPDataPage dp = new STPDataPage();
-
                     DataTable table = data[0];
-                    string[] headers = table.Rows[0].ItemArray.Cast<string>().ToArray();
+                    //populate column names in table (assumes first row is headers)
                     for (int i = 0; i < table.Columns.Count; i++)
                     {
-                        table.Columns[i].ColumnName = headers[i].ToString();
+                        table.Columns[i].ColumnName = table.Rows[0].ItemArray[i].ToString();
                     }
+
+                    STPDataPage dp = new STPDataPage();
                     dp.DataRows = data[0].Rows.Cast<DataRow>().Skip(1).ToArray();
-                    
-                    // if header is named correctly, 
-                    foreach (PropertyInfo property in typeof(ShovelTestPitExtended).GetProperties())
+
+                    // if no data found, warn user
+                    if (dp.DataRows.Length < 1)
                     {
-                        if (headers.Contains(property.Name))
+                        MessageBox.Show("No data found in file. Ensure data is contained\r\nin first tab of Excel file.",
+                            "No Data Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+
+                    activepages["field_tab"] = null;
+
+                    // hide columns to simplify datagrid for viewing - yields matching properties
+                    string[] headers = table.Columns.Cast<DataColumn>().Select(x => x.ColumnName).ToArray();
+                    string[] matches = HideUnhideColumns(headers, typeof(ShovelTestPitExtended)).ToArray();
+                    
+                    // populate ColumnMap and create datagrid
+                    foreach (string header in headers)
+                    {
+                        if (matches.Contains(header))
                         {
-                            SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), property.Name, true);
-                            dp.ColumnMap.Add(property.Name, property.Name);
+                            dp.ColumnMap.Add(header, header);
                         }
                         else
                         {
-                            SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), property.Name, false);
+                            dp.ColumnMap.Add(header, "Unmapped");
                         }
                     }
-                    foreach (string header in headers.Where(x => !dp.ColumnMap.Keys.Contains(x)))
-                    {
-                        dp.ColumnMap.Add(header, "Unmapped");
-                    }
-
                     dp.UpdateDataGridFromMapping();
 
-                    activepages["field_tab"] = null;
                     activepages["field_tab"] = dp;
                     frame.Navigate(dp);
                 }
@@ -144,10 +170,12 @@ namespace ArchyManager
         private void mapSTP_btn_Click(object sender, RoutedEventArgs e)
         {
             STPDataPage dp = activepages["field_tab"] as STPDataPage;
-            MapColumnsDialog dialog = new MapColumnsDialog(dp.ColumnMap,typeof(ShovelTestPitExtended));
+            MapColumnsDialog dialog = new MapColumnsDialog(dp.ColumnMap,typeof(ShovelTestPitExtended), new string[1] { "STPGuid" });
             if (dialog.ShowDialog() ?? false)
             {
                 dp.ColumnMap = dialog.OMToDictionary();
+                string[] matches = HideUnhideColumns(dp.ColumnMap.Values.Where(x => x != "Unmapped"), typeof(ShovelTestPitExtended)).ToArray();
+                dp.UpdateDataGridFromMapping(matches);
             }
         }
 
@@ -302,7 +330,7 @@ namespace ArchyManager
             }
 
             // set defaults so that all needed attributes are sent to SQL Server
-            dp.STPCollection[0].SetBrowsableDefaults();
+            ShovelTestPitExtended.SetBrowsableDefaults();
 
             // upload all the data
             foreach (ShovelTestPitExtended stp in dp.STPCollection)
@@ -313,8 +341,9 @@ namespace ArchyManager
                 }
             }
 
-            
 
+            //BindingOperations.ClearBinding(viewsWB_btn, Button.IsEnabledProperty);
+            //viewsWB_btn.IsEnabled = false;
         }
 
 
@@ -327,6 +356,22 @@ namespace ArchyManager
 
 
     }
+    public class IsSTPConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (value != null)
+            {
+                return value is STPDataPage;
+            }
+            return false;
+
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return DependencyProperty.UnsetValue;
+        }
+    } // for testing bindings
 
     public class Datum2
     {
