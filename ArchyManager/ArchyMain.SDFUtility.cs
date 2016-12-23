@@ -24,7 +24,7 @@ namespace ArchyManager
 {
     public partial class ArchyMain
     {
-        private ArchyRegion region = ArchyRegion.BC;
+        private ArchyRegion region = ArchyRegion.BC; // maybe store on datapage for gc
 
         private async void openSDF_btn_Click(object sender, RoutedEventArgs e)
         {
@@ -291,13 +291,10 @@ namespace ArchyManager
             return db;
         }
 
-
-
         // creates a datamodel of type T from an SqlCeConnection
         private static T[] SDFToDataModel<T>(SqlCeConnection conn)
         {
             Type dffType = typeof(T);
-            //object[] attrs = dffType.GetProperties().Select(p => p.GetCustomAttributes(false)).ToArray();
 
             string sql = string.Format("SELECT * FROM {0}", dffType.Name);
             List<T> datamodellist = new List<T>();
@@ -312,8 +309,6 @@ namespace ArchyManager
 
                 foreach (DataRow row in datatable.Rows)
                 {
-
-
                     string[] columns = dffType.GetProperties().Select(x => x.Name).ToArray();
 
                     T obj = (T)Activator.CreateInstance(dffType);
@@ -331,7 +326,7 @@ namespace ArchyManager
                         p.SetValue
                         (
                             obj,
-                            SqlCeConversion.CheckDBNull(row[column.TrimEnd('_')], p.PropertyType)
+                            SqlCeConversion.CheckDBNull(row[column.TrimEnd('_')])
                             // the trim is required for tables in which Matt gave the column the same name as a table >=/
                         );
                     }

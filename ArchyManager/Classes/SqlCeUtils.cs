@@ -4,7 +4,7 @@ namespace ArchyManager.Classes
 {
     public static class SqlCeConversion
     {
-        public static object CheckDBNull(object obj, Type t)
+        public static object CheckDBNull(object obj)
         {
             if (obj.Equals(DBNull.Value)) return null;
             return obj;

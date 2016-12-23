@@ -34,7 +34,7 @@ namespace ArchyManager.Classes.Archy2014
         [Browsable(true)]
         public string DatumDirection2 { get; set; }
         [Browsable(true)]
-        public Int32? PermitNumber { get; set; }
+        public Int32? PermitNumber { get; set; } //actually is PermitID, Matt >=/
         [Browsable(true)]
         public string ArtefactsCollected { get; set; }
         [Browsable(true)]
@@ -117,9 +117,13 @@ namespace ArchyManager.Classes.Archy2014
         [Browsable(true)]
         public string ProjectNumber { get; set; }
 
+        //permit
+        [Browsable(true)]
+        public string Permit { get; set; }
+
         //lookup
-        //[Browsable(true)]
-        //public string PitTool { get; set; }
+        [Browsable(true)]
+        public string PitTool { get; set; }
 
         new public static void SetBrowsableDefaults(string[] exclusions = null)
         {

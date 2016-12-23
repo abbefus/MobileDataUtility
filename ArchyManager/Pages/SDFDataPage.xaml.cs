@@ -20,7 +20,6 @@ namespace ArchyManager.Pages
             InitializeComponent();
             DataContextChanged += SDFDataPage_DataContextChanged;
         }
-
         private void SDFDataPage_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             data_tac.Items.Clear();
@@ -69,11 +68,5 @@ namespace ArchyManager.Pages
             }
             Console.WriteLine("Found data in {0} tables", data_tac.Items.Count);
         }
-
-    }
-    public interface IUploadable
-    {
-        string DefaultGuid { get; }
-        bool IsUploaded { get; set; }
     }
 }

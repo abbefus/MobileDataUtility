@@ -14,6 +14,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -73,7 +74,7 @@ namespace ArchyManager
                     // hide columns to simplify datagrid for viewing - yields matching properties
                     string[] headers = table.Columns.Cast<DataColumn>().Select(x => x.ColumnName).ToArray();
                     string[] matches = HideUnhideColumns(headers, typeof(ShovelTestPitExtended)).ToArray();
-                    
+
                     // populate ColumnMap and create datagrid
                     foreach (string header in headers)
                     {
@@ -90,45 +91,13 @@ namespace ArchyManager
 
                     activepages["field_tab"] = dp;
                     frame.Navigate(dp);
+                    UpdateLookups();
                 }
             }
+        }
 
 
-
-            //if (stps != null)
-            //{
-            //    ArchSite2[] archsites = QueryArchSites(stps.Select(x => x.SiteNumber));
-            //    Datum2[] datums = QueryDatums(stps.Select(x => x.DatumID));
-
-
-
-            //    for (int i = 0; i < stps.Length; i++)
-            //    {
-            //        ArchSite2 archsite = archsites.Where(x => x.SiteNumber == stps[i].SiteNumber).FirstOrDefault();
-            //        if (archsite == null)
-            //        {
-            //            stps[i].ArchSiteGuid = Guid.Empty;
-            //            MessageBox.Show(string.Format("Datum {0} not found.", stps[i].DatumID),
-            //                "Archsite not found", MessageBoxButton.OK, MessageBoxImage.Warning);
-            //            continue;
-            //        }
-            //        stps[i].ArchSiteGuid = archsite.ArchSiteGuid;
-            //        stps[i].ProjectID = archsite.ProjectID;
-            //        if (string.IsNullOrWhiteSpace(stps[i].PermitNumber))
-            //        {
-            //            stps[i].PermitID = archsite.PermitID;
-            //        }
-
-            //        Datum2 datum = datums.Where(x => x.DatumID == stps[i].DatumID && x.ArchSiteGuid == stps[i].ArchSiteGuid).FirstOrDefault();
-            //        if (datum == null)
-            //        {
-            //            stps[i].DatumGuid = Guid.Empty;
-            //            MessageBox.Show(string.Format("Datum {0} not found.", stps[i].DatumID),
-            //                "Datum not found", MessageBoxButton.OK, MessageBoxImage.Warning);
-            //            continue;
-            //        }
-            //        stps[i].DatumGuid = datum.DatumGuid;
-
+            // CALCULATE LOCATION
             //        if (!stps[i].DatumBearing1.HasValue || !stps[i].DatumDistance1.HasValue || !datum.Easting.HasValue || !datum.Northing.HasValue)
             //        {
             //            MessageBox.Show(string.Format("Unable to calculate coordinates for {0}", stps[i].PitID),
@@ -159,24 +128,187 @@ namespace ArchyManager
             //    }
 
 
-
-            //    foreach (ShovelTestPit stp in stps.Where(x => x.ArchSiteGuid != Guid.Empty && x.DatumGuid != Guid.Empty))
-            //    {
-            //        SaveToDatabase(stp);
-            //    }
-            //}
-        }
-
         private void mapSTP_btn_Click(object sender, RoutedEventArgs e)
         {
             STPDataPage dp = activepages["field_tab"] as STPDataPage;
-            MapColumnsDialog dialog = new MapColumnsDialog(dp.ColumnMap,typeof(ShovelTestPitExtended), new string[1] { "STPGuid" });
+            string[] exceptions = new string[5] { "STPGuid", "ProjectID", "ArchSiteGuid", "PermitNumber", "DatumGuid" };
+            MapColumnsDialog dialog = new MapColumnsDialog(dp.ColumnMap,typeof(ShovelTestPitExtended), exceptions);
+
             if (dialog.ShowDialog() ?? false)
             {
                 dp.ColumnMap = dialog.OMToDictionary();
                 string[] matches = HideUnhideColumns(dp.ColumnMap.Values.Where(x => x != "Unmapped"), typeof(ShovelTestPitExtended)).ToArray();
                 dp.UpdateDataGridFromMapping(matches);
+                UpdateLookups();
             }
+        }
+
+        private async void UpdateLookups()
+        {
+            STPDataPage dp = null;
+
+            //handles case that something is running namely this method
+            if (activepages["field_tab"] is STPDataPage)
+            {
+                if (progressbar.Value > 0)
+                {
+                    dp = activepages["field_tab"] as STPDataPage;
+                    if (dp.DataRows.Length > 0)
+                    {
+                        Utils.DelayAction(5, new Action(UpdateLookups));
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                return;
+            }
+            if (dp == null) dp = activepages["field_tab"] as STPDataPage;
+            if (dp == null) return;
+
+
+
+            Action<IProgress<double>> sqlwork = (iprogress) =>
+            {
+                using (SqlConnection conn = SQL2008.ConnectUsing(SQL2008.ARCHY2014_DB))
+                {
+                    string[] properties = dp.ColumnMap.Values.Distinct().Where(x => x != "Unmapped").ToArray();
+                    string sql = "SELECT * FROM [Archy2014].[dbo].[{0}]";
+                    iprogress.Report(5);
+
+                    //PitToolLU------------------------------------------------------------------------------------
+                    if (dp.STPLookups.PitToolLU == null && properties.Contains("PitTool"))
+                    {
+                        string query = string.Format(sql, "LUPitTool");
+                        dp.STPLookups.PitToolLU = SqlUtils.SQLToDataModel<STPLookups.LUPitTool>(conn, query);
+                        if (dp.STPLookups.PitToolLU.Length == 0)
+                        {
+                            dp.STPLookups.PitToolLU = null;
+                            MessageBox.Show("Data in PitTool column does not match anything in database.",
+                                "Need Levenshtein?", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                    iprogress.Report(20);
+                    //PitToolLU------------------------------------------------------------------------------------
+
+
+                    sql = "SELECT {0} FROM [Archy2014].[dbo].[{1}] WHERE {2} IN {3}";
+                    //Project--------------------------------------------------------------------------------------
+                    // must have empty ProjectLU and populate ProjectNumber column
+                    if ((dp.STPLookups.ProjectLU == null || dp.STPLookups.ProjectLU.Length < 1) 
+                            && properties.Contains("ProjectNumber"))
+                    {
+                        string[] projectNumbers = dp.GetColumnByProperty<string>("ProjectNumber").Distinct().ToArray();
+                        iprogress.Report(25);
+                        if (projectNumbers != null)
+                        {
+                            string pnums = SqlUtils.GetSQLArray(projectNumbers);
+                            string query = string.Format(sql, "*", "Project", "ProjectNumber", pnums);
+                            dp.STPLookups.ProjectLU = SqlUtils.SQLToDataModel<Project>(conn, query);
+                            if (dp.STPLookups.ProjectLU.Length == 0)
+                            {
+                                dp.STPLookups.ProjectLU = null;
+                                MessageBox.Show("Data in ProjectNumber column does not match anything in database.", 
+                                    "No Match Found",MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                    }
+                    iprogress.Report(45);
+                    //Project--------------------------------------------------------------------------------------
+
+                    //Permit---------------------------------------------------------------------------------------
+                    // must have empty PermitLU and populated ProjectLU
+                    if ((dp.STPLookups.ProjectLU != null && dp.STPLookups.ProjectLU.Length > 0) 
+                        && dp.STPLookups.PermitLU == null)
+                    {
+                        string pids = SqlUtils.GetSQLArray(dp.STPLookups.ProjectLU
+                                                .Select(x => x.ProjectID.ToString()),false);
+                        iprogress.Report(50);
+                        string query = string.Format(sql, "*", "Permit", "ProjectID", pids);
+                        dp.STPLookups.PermitLU = SqlUtils.SQLToDataModel<STPLookups.Permit>(conn, query);
+                        if (dp.STPLookups.PermitLU.Length == 0)
+                        {
+                            dp.STPLookups.PermitLU = null;
+                            MessageBox.Show("Data in Permit column does not match anything in database.",
+                                "Need Levenshtein?", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                    iprogress.Report(65);
+                    //Permit---------------------------------------------------------------------------------------
+
+                    #region Get ArchSite
+                    //ArchSite-------------------------------------------------------------------------------------
+                    // must have empty ArchSiteLU and SiteNumber column
+                    if (dp.STPLookups.ArchSiteLU == null && properties.Contains("SiteNumber"))
+                    {
+                        string[] siteNumbers = dp.GetColumnByProperty<string>("SiteNumber").Distinct().ToArray();
+                        iprogress.Report(70);
+                        if (siteNumbers != null)
+                        {
+                            string snums = SqlUtils.GetSQLArray(siteNumbers);
+                            string cols = "ArchSiteGuid, SiteNumber, ProjectID, PermitID, SurveyDate";
+                            string query = string.Format(sql, cols, "ArchSite", "SiteNumber", snums);
+                            dp.STPLookups.ArchSiteLU = SqlUtils.SQLToDataModel<ArchSite>(conn, query);
+                            iprogress.Report(75);
+                            if (dp.STPLookups.ArchSiteLU.Length == 0)
+                            {
+                                dp.STPLookups.ProjectLU = null;
+                                MessageBox.Show("Data in ProjectNumber column does not match anything in database.",
+                                    "No Match Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                            else if (dp.STPLookups.ProjectLU == null)
+                            {
+                                string projids = SqlUtils.GetSQLArray(dp.STPLookups.ArchSiteLU
+                                                .Select(x => x.ProjectID.ToString()));
+                                query = string.Format(sql, "*", "Project", "ProjectID", projids);
+                                dp.STPLookups.ProjectLU = SqlUtils.SQLToDataModel<Project>(conn, query);
+                                
+                                // if ProjectLU is null then PermitLU is definitely null
+                                query = string.Format(sql, "*", "Permit", "ProjectID", projids);
+                                dp.STPLookups.PermitLU = SqlUtils.SQLToDataModel<STPLookups.Permit>(conn, query);
+                            }
+                        }
+                    }
+                    iprogress.Report(85);
+                    //ArchSite-------------------------------------------------------------------------------------
+                    #endregion
+
+                    //Datum----------------------------------------------------------------------------------------
+                    // must have empty DatumLU, populated ArchSiteLU, and a DatumID column
+                    if (dp.STPLookups.DatumLU == null && properties.Contains("DatumID"))
+                    {
+                        if (dp.STPLookups.ArchSiteLU == null || dp.STPLookups.ArchSiteLU.Length == 0)
+                        {
+                            iprogress.Report(100);
+                            MessageBox.Show("A unique DatumID cannot be stored in ShovelTestPit if there are no SiteNumbers.",
+                                "Unique STP DatumID Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                        else
+                        {
+                            string guids = SqlUtils.GetSQLArray(dp.STPLookups.ArchSiteLU
+                                                .Select(x => x.ArchSiteGuid.ToString()));
+                            iprogress.Report(90);
+                            string query = string.Format(sql, "*", "Datum", "ArchSiteGuid", guids);
+                            dp.STPLookups.DatumLU = SqlUtils.SQLToDataModel<Datum>(conn, query);
+                            if (dp.STPLookups.DatumLU.Length == 0)
+                            {
+                                dp.STPLookups.DatumLU = null;
+                                MessageBox.Show("Data in SiteNumber does not match anything in Datum table.",
+                                    "No Matches Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                    }
+                    //Datum----------------------------------------------------------------------------------------
+                }
+                iprogress.Report(0);
+            };
+
+            Progress<double> progress = new Progress<double>(x => progressbar.Value = x);
+            await Task.Run(() =>
+            {
+                sqlwork(progress);
+            });
         }
 
         private ShovelTestPit[] ReadSTPs(DataSet dataset)
@@ -249,77 +381,39 @@ namespace ArchyManager
 
         }
 
-        private Datum2[] QueryDatums(IEnumerable<string> datumids)
+
+        private static string DirectionFromBearing(double bearing)
         {
-            StringBuilder commandSB = new StringBuilder();
-            commandSB.AppendLine("SELECT DatumID, Easting, Northing, UTMZone, DatumGuid, ArchSiteGuid")
-                    .AppendLine("FROM [Archy2014].[dbo].[Datum]")
-                    .AppendLine(string.Format("WHERE DatumID IN ('{0}')",
-                                    string.Join("','", datumids.Distinct())));
-            List<Datum2> datumlist = null;
-
-            using (SqlConnection conn = SQL2008.ConnectUsing(SQL2008.ARCHY2014_DB))
-            {
-                using (SqlCommand comm = new SqlCommand(commandSB.ToString(), conn))
-                {
-                    comm.CommandType = CommandType.Text;
-                    SqlDataReader rdr = comm.ExecuteReader();
-
-                    datumlist = new List<Datum2>();
-                    while (rdr.Read())
-                    {
-                        Datum2 datum = new Datum2
-                        {
-                            DatumID = rdr.SafeGetString("DatumID"),
-                            DatumGuid = rdr.SafeGetGuid("DatumGuid"),
-                            Easting = rdr.GetDouble(rdr.GetOrdinal("Easting")),
-                            Northing = rdr.GetDouble(rdr.GetOrdinal("Northing")),
-                            UTMZone = rdr.GetByte(rdr.GetOrdinal("UTMZone")),
-                            ArchSiteGuid = rdr.SafeGetGuid("ArchSiteGuid")
-                        };
-                        datumlist.Add(datum);
-                    }
-                }
-            };
-
-            return datumlist.ToArray();
+            if (bearing < 22.5 && bearing > 337.5) return "N";
+            if (bearing > 22.5 && bearing < 67.5) return "NE";
+            if (bearing > 67.5 && bearing < 112.5) return "E";
+            if (bearing > 112.5 && bearing < 157.5) return "SE";
+            if (bearing > 157.5 && bearing < 202.5) return "S";
+            if (bearing > 202.5 && bearing < 247.5) return "SW";
+            if (bearing > 247.5 && bearing < 292.5) return "W";
+            if (bearing > 292.5 && bearing < 337.5) return "NW";
+            return null;
         }
-        private ArchSite2[] QueryArchSites(IEnumerable<string> sitenumbers)
-        {
-            StringBuilder commandSB = new StringBuilder();
-            commandSB.AppendLine("SELECT ArchSiteGuid, ProjectID, PermitID, SiteNumber")
-                    .AppendLine("FROM [Archy2014].[dbo].[ArchSite]")
-                    .AppendLine(string.Format("WHERE SiteNumber IN ('{0}')", string.Join("','", sitenumbers.Distinct())));
-            List<ArchSite2> ialist = null;
-
-            using (SqlConnection conn = SQL2008.ConnectUsing(SQL2008.ARCHY2014_DB))
-            {
-                using (SqlCommand comm = new SqlCommand(commandSB.ToString(), conn))
-                {
-                    comm.CommandType = CommandType.Text;
-                    SqlDataReader rdr = comm.ExecuteReader();
-
-                    ialist = new List<ArchSite2>();
-                    while (rdr.Read())
-                    {
-                        ArchSite2 archsite = new ArchSite2
-                        {
-                            ArchSiteGuid = rdr.SafeGetGuid("ArchSiteGuid"),
-                            ProjectID = rdr.SafeGetInt16("ProjectID"),
-                            PermitID = rdr.SafeGetInt32("PermitID"),
-                            SiteNumber = rdr.SafeGetString("SiteNumber")
-                        };
-                        ialist.Add(archsite);
-                    }
-                }
-            }
-            return ialist.ToArray();
-        }
-
 
         // saves the STPCollection, as is, to the database
         public void SaveToDatabase()
         {
+            UpdateLookups();
+            // NEED EITHER ProjectNumber or SiteNumber for every STP
+            // If have sitenumber, use LU to populate Project Number
+
+            //NEED EITHER Lat & Long OR E,N,Zone OR DatumLU not empty or null and some DatumDistance / DatumBearing filled out
+
+            // DO THIS WITH THE STPCOLLECTION
+            //string[] properties = dp.ColumnMap.Values.Distinct().Where(x => x != "Unmapped").ToArray();
+            //                else if (projectNumbers.Any(x => !dp.STPLookups.ProjectLU.Select(y => y.ProjectNumber).Contains(x)))
+            //{
+            //    MessageBox.Show("One or more ProjectNumber values do not match the database and will be discarded.",
+            //        "No Match Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+            //}
+
+            //WILL NEED TO DEAL IF MORE THAN ONE ARCHSITEGUID RETURNED FOR A SINGLE SITENUMBER
+
             // make sure datapage is correct
             STPDataPage dp = activepages["field_tab"] is STPDataPage ? activepages["field_tab"] as STPDataPage : null;
             if (dp == null)
@@ -328,6 +422,16 @@ namespace ArchyManager
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
+
+            // make sure there is a project number specified and that none of its values are non-numeric
+            //if (there is a project number column =)
+            //{
+            //    if (DataRows.Select(x => x["ProjectNumber"].ToString()).Any(x => !Utils.IsAllNumbers(x)) 
+            //    {
+            //        MessageBox.Show("Incorrectly formatted project numbers. Cannot upload.)"
+            //    }
+            //}
+
 
             // set defaults so that all needed attributes are sent to SQL Server
             ShovelTestPitExtended.SetBrowsableDefaults();
@@ -373,23 +477,65 @@ namespace ArchyManager
         }
     } // for testing bindings
 
-    public class Datum2
-    {
-        public string DatumID { get; set; }
-        public double? Easting { get; set; }
-        public double? Northing { get; set; }
-        public double? Longitude { get; set; }
-        public double? Latitude { get; set; }
-        public byte? UTMZone { get; set; }
-        public Guid DatumGuid { get; set; }
-        public Guid ArchSiteGuid { get; set; }
-    }
-
-    public class ArchSite2
-    {
-        public Guid ArchSiteGuid { get; set; }
-        public string SiteNumber { get; set; }
-        public int? ProjectID { get; set; }
-        public int? PermitID { get; set; }
-    }
 }
+
+
+
+
+
+
+//string property = dp.ColumnMap[key];
+
+////we know it fails to convert to this property
+//PropertyInfo pInfo = typeof(ShovelTestPitExtended).GetProperty(property);
+//string[] datas = dp.DataRows.Select(row => row[key].ToString()).Distinct().ToArray();
+//Dictionary<string, string> lu = new Dictionary<string, string>();
+//string query;
+
+//switch (pInfo.Name)
+//{
+//// likely entered ProjectName
+//case "ProjectNumber":
+
+//    query = "SELECT * FROM [Archy2014].[dbo].[Project] WHERE ProjectID > 0";
+//    dp.STPLookups.ProjectLU = SqlUtils.SQLToDataModel<Project>(conn,query);
+//    foreach (string data in datas)
+//    {
+//        KeyValuePair<string, string> kvp = new KeyValuePair<string, string>
+//        (
+//            data,
+//            dp.STPLookups.ProjectLU
+//                .Aggregate((x, y) => Utils.LevenshteinDistance.Compute(data, x.ProjectName) <
+//                Utils.LevenshteinDistance.Compute(data, y.ProjectName) ? x : y).ProjectName
+//        );
+//MessageBoxResult mbr = MessageBox.Show(string.Format("Is {0} your intended project name for {1}?", kvp.Value, kvp.Key),
+//"Attempting to Align ProjectName", MessageBoxButton.YesNo, MessageBoxImage.Question);
+//        if (mbr == MessageBoxResult.Yes)
+//        {
+//            lu.Add(kvp.Key, kvp.Value);
+//        }
+//        else
+//        {
+//            MessageBox.Show(string.Format("Unable to convert to {0}.\r\nYou will need to reformat this column in\r\norder to include it in the export.", pInfo.Name),
+//            "Unable to Convert Table Values", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+//        }
+                                                
+//    }
+//    foreach (KeyValuePair<string, string> kvp in lu)
+//    {
+//        foreach (DataRow row in dp.DataRows)
+//        {
+//            if (row[key].ToString() == kvp.Key) row[key] = kvp.Value;
+//        }
+//    }
+//    break;
+//// likely entered PitTool
+//case "PitToolID":
+//    query = "SELECT * FROM [Archy2014].[dbo].[LUPitTool]";
+//    dp.STPLookups.PermitLU = SqlUtils.SQLToDataModel<STPLookups.Permit>(conn, query);
+//    break;
+//default:
+//    MessageBox.Show(string.Format("Unable to convert {0}.\r\nYou will need to reformat this column in\r\norder to include it in the export.", pInfo.Name),
+//        "Unable to Convert Table Values", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+//    break;
+//}

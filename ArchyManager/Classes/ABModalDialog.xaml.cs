@@ -45,7 +45,9 @@ namespace ABUtils
             InitializeComponent();
             Title = title;
             stopClose = required;
-            Owner = Application.Current.MainWindow;
+
+            if (Application.Current.MainWindow.IsVisible) Owner = Application.Current.MainWindow;
+
             SourceInitialized += Window_SourceInitialized;
             SizeToContent = SizeToContent.WidthAndHeight;
             Loaded += Window_Loaded;
@@ -80,6 +82,7 @@ namespace ABUtils
 
         private void SetNativeEnabled(bool enabled)
         {
+            if (Owner == null) return;
             WindowInteropHelper helper = new WindowInteropHelper(Owner);
             IntPtr hwnd = helper.Handle;
             SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) &
@@ -119,6 +122,7 @@ namespace ABUtils
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            if (Owner == null) return;
             this.Left = Owner.Left + (Owner.ActualWidth - this.ActualWidth) / 2;
             this.Top = Owner.Top + (Owner.ActualHeight - this.ActualHeight) / 2;
             Loaded -= Window_Loaded;

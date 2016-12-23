@@ -30,7 +30,7 @@
         </Style>
     </Page.Resources>
     <Grid x:Name="grid">
-        <DataGrid x:Name="stp_dg" Margin="-6" HorizontalAlignment="Left" VerticalAlignment="Top" AutoGenerateColumns="True"
+        <DataGrid x:Name="stp_dg" Margin="-5,-2,-5,-1" HorizontalAlignment="Left" VerticalAlignment="Top" AutoGenerateColumns="True"
                   extension:DataGridBehavior.UseBrowsableAttributeOnColumn="True" IsReadOnly="True" CanUserAddRows="False"
                   ItemsSource="{Binding}" EnableColumnVirtualization="True" EnableRowVirtualization="True" />
     </Grid>

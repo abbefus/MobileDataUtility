@@ -230,6 +230,11 @@ namespace ArchyManager
         }
     }
 
+    public interface IUploadable
+    {
+        string DefaultGuid { get; }
+        bool IsUploaded { get; set; }
+    }
 
 }
 

@@ -13,6 +13,57 @@ namespace ArchyManager.Classes
 {
     static class SqlUtils
     {
+        // Note: Trim is required for properties in tables for which Matt gave a column the same name as the table >=/
+        public static T[] SQLToDataModel<T>(SqlConnection conn, string query = null)
+        {
+            Type dffType = typeof(T);
+
+            string sql = query ?? string.Format("SELECT * FROM {0}", dffType.Name);
+            List<T> datamodellist = new List<T>();
+
+            try
+            {
+                DataTable datatable = new DataTable();
+                using (SqlDataAdapter adapter = new SqlDataAdapter(sql, conn))
+                {
+                    adapter.Fill(datatable);
+                }
+
+                foreach (DataRow row in datatable.Rows)
+                {
+                    string[] available = row.Table.Columns.Cast<DataColumn>().Select(x => x.ColumnName.TrimEnd('_')).ToArray(); //trim
+                    string[] columns = dffType.GetProperties().Select(x => x.Name).Where(x => available.Contains(x)).ToArray();
+
+                    T obj = (T)Activator.CreateInstance(dffType);
+                    foreach (string column in columns)
+                    {
+                        PropertyInfo p = dffType.GetProperty(column);
+
+                        BrowsableAttribute ba = p.GetCustomAttribute(typeof(BrowsableAttribute), false) as BrowsableAttribute;
+                        if (ba != null)
+                        {
+                            if (ba.Browsable == false) continue;
+                        }
+                        string col = column.TrimEnd('_');  //trim
+                        object value = CheckDBNull(row[col]);
+                        p.SetValue
+                        (
+                            obj,
+                            value
+                        );
+                    }
+                    datamodellist.Add(obj);
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(string.Format("{0}", e.Message));
+                throw new Exception(string.Format("There was an error reading {0} from the sql server.", dffType.Name));
+            }
+
+            return datamodellist.ToArray();
+        }
+
 
         //cmd.Parameters.Add("@NewId", SqlDbType.Int).Direction = ParameterDirection.Output;
         //if property name in outputparams, set ParameterDirection.Output
@@ -152,7 +203,7 @@ namespace ArchyManager.Classes
             }
 
         }
-        private static bool IsNullableType(Type type)
+        public static bool IsNullableType(Type type)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
         }
@@ -171,6 +222,24 @@ namespace ArchyManager.Classes
             catch
             {
                 return false;
+            }
+        }
+
+        public static object CheckDBNull(object obj)
+        {
+            if (obj.Equals(DBNull.Value)) return null;
+            return obj;
+        }
+
+        public static string GetSQLArray(IEnumerable<object> array, bool asString = true)
+        {
+            if (asString)
+            {
+                return string.Format("('{0}')", string.Join("','", array.Distinct()));
+            }
+            else
+            {
+                return string.Format("({0})", string.Join(",", array.Distinct()));
             }
         }
     }
