@@ -13,7 +13,11 @@ using System.Windows.Input;
 
 namespace ArchyManager.Dialogs
 {
+    #region MapColumnsDialog
     // Important Note: requires BrowsableAttribute on all properties of dataType
+    // Notes:
+    //  -uses "Unmapped" as a placeholder for unmapped columns 
+    //      -perhaps would be better that these have no value at all
     class MapColumnsDialog : OKCancelDialog
     {       
         public MapColumnsDialog(Dictionary<string,string> currentMapping, Type dataType, string[] exceptions=null)
@@ -162,7 +166,6 @@ namespace ArchyManager.Dialogs
             set { _dataType = value; NotifyPropertyChanged(); }
         }
     }
-
     public class ViewModel : ViewModelBase
     {
         private ObservableCollection<string> _options = new ObservableCollection<string>();
@@ -179,7 +182,6 @@ namespace ArchyManager.Dialogs
             set { _map = value; NotifyPropertyChanged(); }
         }
     }
-
     public class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -193,7 +195,9 @@ namespace ArchyManager.Dialogs
         }
     }
 
-    public class DataConverter : IValueConverter
+    #endregion
+
+    public class GenericConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

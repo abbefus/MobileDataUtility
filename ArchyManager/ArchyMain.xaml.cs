@@ -30,7 +30,8 @@ namespace ArchyManager
 
         private const int GWL_STYLE = -16;
         private const int WS_DISABLED = 0x08000000;
-        
+        private const string FIELD_TAB = "field_tab";
+
 
         public ArchyMain()
             : base 
@@ -63,6 +64,11 @@ namespace ArchyManager
                 ~WS_DISABLED | (enabled ? 0 : WS_DISABLED));
         }
 
+
+        private void viewsWB_btn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
 
         #region Ribbon
 
@@ -110,6 +116,11 @@ namespace ArchyManager
                 Console.WriteLine(msg);
             });
         }
+        private void ClearFrame(string tab)
+        {
+            frame.Content = null;
+            activepages[tab] = null;
+        }
 
 
         private void exit_btn_Click(object sender, RoutedEventArgs e)
@@ -117,12 +128,6 @@ namespace ArchyManager
             Application.Current.Shutdown();
         }
 
-        private void viewsWB_btn_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        
     }
 
 
@@ -135,79 +140,6 @@ namespace ArchyManager
         }
     }
 
-    public static class SqlDataReaderExtensions
-    {
-        public static int SafeGetInt32(this SqlDataReader reader,
-                                       string columnName, int defaultValue = 0)
-        {
-            int ordinal = reader.GetOrdinal(columnName);
-
-            if (!reader.IsDBNull(ordinal))
-            {
-                return reader.GetInt32(ordinal);
-            }
-            else
-            {
-                return defaultValue;
-            }
-        }
-        public static short SafeGetInt16(this SqlDataReader reader,
-                                       string columnName, short defaultValue = 0)
-        {
-            int ordinal = reader.GetOrdinal(columnName);
-
-            if (!reader.IsDBNull(ordinal))
-            {
-                return reader.GetInt16(ordinal);
-            }
-            else
-            {
-                return defaultValue;
-            }
-        }
-        public static string SafeGetString(this SqlDataReader reader,
-                                       string columnName, string defaultValue = "")
-        {
-            int ordinal = reader.GetOrdinal(columnName);
-
-            if (!reader.IsDBNull(ordinal))
-            {
-                return reader.GetString(ordinal);
-            }
-            else
-            {
-                return defaultValue;
-            }
-        }
-        public static DateTime SafeGetDateTime(this SqlDataReader reader,
-                                       string columnName)
-        {
-            int ordinal = reader.GetOrdinal(columnName);
-
-            if (!reader.IsDBNull(ordinal))
-            {
-                return reader.GetDateTime(ordinal);
-            }
-            else
-            {
-                return DateTime.MinValue;
-            }
-        }
-        public static Guid SafeGetGuid(this SqlDataReader reader,
-                                       string columnName)
-        {
-            int ordinal = reader.GetOrdinal(columnName);
-
-            if (!reader.IsDBNull(ordinal))
-            {
-                return reader.GetGuid(ordinal);
-            }
-            else
-            {
-                return Guid.Empty;
-            }
-        }
-    }
     public class ConsolWriter : TextWriter
     {
         private TextBlock textblock;
@@ -237,6 +169,12 @@ namespace ArchyManager
     }
 
 }
+
+
+
+
+
+
 
 
 

@@ -68,7 +68,9 @@
                 <r:RibbonGroup x:Name="excel_rg" Header="Upload" ContextMenu="{x:Null}">
                     <r:RibbonButton x:Name="openSTP_btn" Label="Import STPs" LargeImageSource="Images/table-excel-shovel-icon.png" ContextMenu="{x:Null}"
                                     Click="openSTP_btn_Click"/>
-                    <r:RibbonButton x:Name="mapSTP_btn" Label="Map STP Columns" LargeImageSource="Images/data-sort-icon.png" ContextMenu="{x:Null}"
+                    <r:RibbonButton x:Name="uploadSTP_btn" Label="Upload STPs" LargeImageSource="Images/table-shovel-up-icon.png" ContextMenu="{x:Null}"
+                                    Click="uploadSTP_btn_Click"  IsEnabled="{Binding ElementName=frame, Path=Content, Converter={StaticResource IsStpConverter}}"/>
+                    <r:RibbonButton x:Name="mapSTP_btn" Label="Map STP Columns" LargeImageSource="Images/table-select-column-icon.png" ContextMenu="{x:Null}"
                                     Click="mapSTP_btn_Click" IsEnabled="{Binding ElementName=frame, Path=Content, Converter={StaticResource IsStpConverter}}"/>
                 </r:RibbonGroup>
                 <r:RibbonGroup x:Name="report_rg" Header="Download" ContextMenu="{x:Null}">

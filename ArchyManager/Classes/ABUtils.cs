@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -7,6 +8,44 @@ using System.Windows.Threading;
 
 namespace ABUtils
 {
+    public static class GISUtils
+    {
+        public class Ellipsoid
+        {
+            private Dictionary<GeodeticDatum, Tuple<double, double>> CONSTANTS = new Dictionary<GeodeticDatum, Tuple<double, double>>
+        {
+            { GeodeticDatum.NAD83, new Tuple<double, double>(6378137,0.00335281068118232) },
+            { GeodeticDatum.WGS84, new Tuple<double, double>(6378137,0.00335281066474748) },
+        };
+
+            public Ellipsoid(GeodeticDatum datum)
+            {
+                Datum = datum;
+                AxisMajor = CONSTANTS[datum].Item1;
+                Flattening = CONSTANTS[datum].Item2;
+                AxisMinor = AxisMajor * (1 - Flattening);
+                EccSquared = 1 - ((AxisMinor * AxisMinor) / (AxisMajor * AxisMajor));
+            }
+
+            public GeodeticDatum Datum { get; private set; }
+            public double AxisMajor { get; private set; }
+            public double AxisMinor { get; private set; }
+            public double Flattening { get; private set; }
+            public double EccSquared { get; private set; }
+
+            public static double GetFlattening(double axisMajor, double axisMinor)
+            {
+                return (axisMajor - axisMinor) / axisMajor;
+            }
+        }
+        public enum GeodeticDatum
+        {
+            NAD83,
+            WGS84
+        }
+    }
+
+
     public static class FileUtils
     {
         public static string Increment(string path, int pad=2)

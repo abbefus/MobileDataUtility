@@ -36,9 +36,9 @@ namespace ArchyManager
                 Archy2014DB db = ReadSDF(openFileDialog.FileName);
                 if (db == null) return;
 
-                activepages["field_tab"] = null;
-                activepages["field_tab"] = new SDFDataPage { DataContext = db };
-                frame.Navigate(activepages["field_tab"]);
+                ClearFrame(FIELD_TAB);
+                activepages[FIELD_TAB] = new SDFDataPage { DataContext = db };
+                frame.Navigate(activepages[FIELD_TAB]);
 
                 double totes = typeof(Archy2014DB).GetProperties()
                     .Select(x => (Array)typeof(Archy2014DB).GetProperty(x.Name).GetValue(db))
@@ -143,7 +143,7 @@ namespace ArchyManager
 
         private async void uploadSDF_btn_Click(object sender, RoutedEventArgs e)
         {
-            Archy2014DB db = ((SDFDataPage)activepages["field_tab"]).DataContext as Archy2014DB;
+            Archy2014DB db = ((SDFDataPage)activepages[FIELD_TAB]).DataContext as Archy2014DB;
             StringBuilder log = new StringBuilder();
 
             Progress<double> progress = new Progress<double>(x => progressbar.Value = x);

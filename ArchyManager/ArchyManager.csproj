@@ -117,7 +117,7 @@
     <Compile Include="Classes\Archy2014\WCA.cs" />
     <Compile Include="Classes\Converters.cs" />
     <Compile Include="Classes\DataGridBehavior.cs" />
-    <Compile Include="Classes\LatLongCalc.cs" />
+    <Compile Include="Classes\GISConversion.cs" />
     <Compile Include="Classes\SqlCeUtils.cs" />
     <Compile Include="Classes\SqlUtils.cs" />
     <Compile Include="ArchyMain.xaml.cs">
@@ -205,7 +205,12 @@
   <ItemGroup>
     <Resource Include="Images\data-sort-icon.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\table-shovel-up-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\table-select-column-icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

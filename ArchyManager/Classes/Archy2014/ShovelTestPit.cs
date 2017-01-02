@@ -13,6 +13,8 @@ namespace ArchyManager.Classes.Archy2014
         public string DefaultGuid { get { return "STPGuid"; } }
         [Browsable(false)]
         public bool IsUploaded { get; set; }
+        [Browsable(false)]
+        public bool IsUploadable { get; set; }
 
         // inside schema
         [Browsable(true)]
@@ -61,16 +63,16 @@ namespace ArchyManager.Classes.Archy2014
         public byte? SatelliteCount { get; set; }
         [Browsable(true)]
         public string SatelliteFix { get; set; }
-        [Browsable(true)]
+        [Browsable(false)]
         public Guid STPGuid { get; set; }
         [Browsable(true)]
-        public bool? StruckWater { get; set; }
+        public bool StruckWater { get; set; }
         [Browsable(true)]
         public double? Elevation { get; set; }
         [Browsable(true)]
         public Int32? PolygonID { get; set; }
         [Browsable(true)]
-        public Guid ArchSiteGuid { get; set; }
+        public Guid? ArchSiteGuid { get; set; }
         [Browsable(true)]
         public string PhotoFrom { get; set; }
         [Browsable(true)]
@@ -80,7 +82,7 @@ namespace ArchyManager.Classes.Archy2014
         [Browsable(true)]
         public byte? PitToolID { get; set; }
         [Browsable(true)]
-        public Guid DatumGuid { get; set; }
+        public Guid? DatumGuid { get; set; }
         [Browsable(true)]
         public double? DatumBearing1 { get; set; }
         [Browsable(true)]
@@ -88,7 +90,7 @@ namespace ArchyManager.Classes.Archy2014
 
         public static void SetBrowsableDefaults(string[] exclusions = null)
         {
-            string[] fixedexclusions = new string[] { "DefaultGuid", "IsUploaded" };
+            string[] fixedexclusions = new string[] { "DefaultGuid", "IsUploaded", "IsUploadable" };
             exclusions = exclusions != null ? exclusions.Concat(fixedexclusions).ToArray() : fixedexclusions;
             foreach (PropertyInfo property in typeof(ShovelTestPit).GetProperties())
             {
@@ -127,7 +129,7 @@ namespace ArchyManager.Classes.Archy2014
 
         new public static void SetBrowsableDefaults(string[] exclusions = null)
         {
-            string[] fixedexclusions = new string[] { "DefaultGuid", "IsUploaded" };
+            string[] fixedexclusions = new string[] { "DefaultGuid", "IsUploaded", "IsUploadable" };
             exclusions = exclusions != null ? exclusions.Concat(fixedexclusions).ToArray() : fixedexclusions;
             foreach (PropertyInfo property in typeof(ShovelTestPitExtended).GetProperties())
             {
@@ -181,7 +183,8 @@ namespace ArchyManager.Classes.Archy2014
                 SurveyDate = SurveyDate,
                 UTMZone = UTMZone,
                 VDOP = VDOP,
-                IsUploaded = IsUploaded
+                IsUploaded = IsUploaded,
+                IsUploadable = IsUploadable
             };
         }
 

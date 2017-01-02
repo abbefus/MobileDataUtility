@@ -134,7 +134,7 @@ namespace ArchyManager.Classes
             return rv;
         }
 
-        public static void ExecuteSP<T>(T row, SqlConnection conn, SPString sp)
+        public static bool ExecuteSP<T>(T row, SqlConnection conn, SPString sp, out string sqlmessage, bool showMessage=true)
         {
             string spcommand = string.Format(sp.Value, row.GetType().Name);
             using (SqlCommand comm = new SqlCommand(spcommand, conn))
@@ -143,16 +143,33 @@ namespace ArchyManager.Classes
                 AddParametersFrom(row, comm);
                 try
                 {
-                    //comm.ExecuteNonQuery();
+                    comm.ExecuteNonQuery();
+                    sqlmessage = "Successfully executed stored procedure.";
+                    return true;
                 }
-                catch (Exception e)
+                catch (SqlException e)
                 {
-                    MessageBox.Show(e.Message + "\n" + e.InnerException,
-                                string.Format("Stored Procedure Failed - {0}", spcommand), MessageBoxButton.OK, MessageBoxImage.Error);
+                    if (showMessage)
+                    {
+                        MessageBox.Show(e.Message,
+                                string.Format("Stored Procedure Failed - {0}", spcommand), 
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    sqlmessage = e.Message;
+                    return false;
                 }
             }
         }
-        public static SqlParameter ExecuteSP<T>(T row, SqlConnection conn, SPString sp, DbType outputType)
+//        catch (StoredProcException spEx)
+//        {
+//            switch (spEx.ReturnValue)
+//            {
+//                case 6:
+//                    UserMessageException umEx = new UserMessageException(spEx.Message);
+//                    throw umEx;
+//            }
+//}
+public static SqlParameter ExecuteSP<T>(T row, SqlConnection conn, SPString sp, DbType outputType, bool showMessage = true)
         {
             string spcommand = string.Format(sp.Value, row.GetType().Name);
             SqlParameter rv;
@@ -167,8 +184,11 @@ namespace ArchyManager.Classes
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show(e.Message + "\n" + e.InnerException,
+                    if (showMessage)
+                    {
+                        MessageBox.Show(e.Message + "\n" + e.InnerException,
                                 string.Format("Stored Procedure Failed - {0}", spcommand), MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
             return rv;
@@ -267,4 +287,80 @@ namespace ArchyManager.Classes
         }
 
     }
+
+
+    public static class SqlDataReaderExtensions
+    {
+        public static int SafeGetInt32(this SqlDataReader reader,
+                                       string columnName, int defaultValue = 0)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetInt32(ordinal);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+        public static short SafeGetInt16(this SqlDataReader reader,
+                                       string columnName, short defaultValue = 0)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetInt16(ordinal);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+        public static string SafeGetString(this SqlDataReader reader,
+                                       string columnName, string defaultValue = "")
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetString(ordinal);
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+        public static DateTime SafeGetDateTime(this SqlDataReader reader,
+                                       string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetDateTime(ordinal);
+            }
+            else
+            {
+                return DateTime.MinValue;
+            }
+        }
+        public static Guid SafeGetGuid(this SqlDataReader reader,
+                                       string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+
+            if (!reader.IsDBNull(ordinal))
+            {
+                return reader.GetGuid(ordinal);
+            }
+            else
+            {
+                return Guid.Empty;
+            }
+        }
+    }
+
 }

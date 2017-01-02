@@ -8,17 +8,8 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ArchyManager.Pages
 {
@@ -44,15 +35,13 @@ namespace ArchyManager.Pages
             STPCollection.Clear();
             values = values ?? ColumnMap.Values.Where(x => x != "Unmapped").ToArray();
 
-            
-            for (int i = 1; i < DataRows.Length; i++)
+            for (int i = 0; i < DataRows.Length; i++)
             {
-                ShovelTestPitExtended stp = new ShovelTestPitExtended();
+                ShovelTestPitExtended stp = new ShovelTestPitExtended() { IsUploadable = true, IsUploaded = false };
                 foreach (KeyValuePair<string,string> kvp in ColumnMap.Where(x => values.Contains(x.Value)))
                 {
                     PropertyInfo pi = stp.GetType().GetProperty(kvp.Value);
                     object input = DataRows[i][kvp.Key];
-                    
                     object value;
                     if (SqlUtils.TryChangeType(input, pi.PropertyType, out value))
                     {
@@ -60,9 +49,16 @@ namespace ArchyManager.Pages
                     }
                     else
                     {
-                        Type targetType = SqlUtils.IsNullableType(pi.PropertyType) ? Nullable.GetUnderlyingType(pi.PropertyType) : pi.PropertyType;
-                        MessageBox.Show(string.Format("Unable to convert column '{0}' to {1}.\r\nYou will either need to:\r\n\r\n\ta) map this column or\r\n\tb) reformat it in Excel  \r\n\r\nin order to include it in the export.", 
-                            kvp.Key,targetType.Name),
+                        Type targetType = SqlUtils.IsNullableType(pi.PropertyType) ? 
+                            Nullable.GetUnderlyingType(pi.PropertyType) : 
+                            pi.PropertyType;
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine("Unable to convert column [ {0} ] to {1}.")
+                            .AppendLine("You will either need to:")
+                            .AppendLine("\ta) map this column or")
+                            .AppendLine("\tb) reformat it in Excel");
+
+                        MessageBox.Show(string.Format(sb.ToString(),kvp.Key,targetType.Name),
                             "Unable to Convert Table Values", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                         values = values.Except(Enumerable.Repeat(kvp.Value,1)).ToArray();
                         SqlUtils.SetPropertyBrowsable(typeof(ShovelTestPitExtended), pi.Name, false);
@@ -93,15 +89,6 @@ namespace ArchyManager.Pages
         public Permit[] PermitLU { get; set; }
         public Project[] ProjectLU { get; set; }
         public LUPitTool[] PitToolLU { get; set; }
-        
-
-
-
-
-
-
-
-
 
         public class Permit
         {
@@ -121,6 +108,7 @@ namespace ArchyManager.Pages
             [Browsable(true)]
             public byte PitToolID { get; set; }
             [Browsable(true)]
+            [DefaultValue("Shovel")]
             public string PitTool { get; set; }
             [Browsable(true)]
             public Guid? PitToolGuid { get; set; }
